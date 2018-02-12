@@ -289,6 +289,7 @@ a.link-external:after {
 #caption-text {
     font-size: 125%;
     font-weight: bold;
+    text-transform: capitalize;
     transform: rotate(5deg);
     letter-spacing: 0.1em;
 }
@@ -298,6 +299,7 @@ a.link-external:after {
     bottom: -6em;
     font-size: 265%;
     font-weight: bold;
+    text-transform: uppercase;
     transform: rotate(275deg);
     letter-spacing: 0.5em;
 }
@@ -480,6 +482,10 @@ a.link-external:after {
     height: 2em;
     width: 2em;
     border: 1px solid #ccc;
+}
+
+#setting-volume #volume-control {
+    float: right;
 }
 
 /* font options */
@@ -899,7 +905,7 @@ if (Config.debug) {
 }
 
 setup.returnPsg = '';
-$('#bumper').fadeOut(10);
+$('#bumper').css('display', 'none');
 /* twine-user-script #6: "dialog-api-macro-set.js" */
 // dialog API macro set, by chapel; for sugarcube 2
 // version 1.2.0
@@ -2767,6 +2773,21 @@ setup.preloader = {
 /* twine-user-script #18: "interface.js" */
 // interface.js: ui controls, among other things
 
+/* settings patch */
+$(document).on(':dialogopen', function () {
+    setTimeout( function () {
+        var $setting = $('#header-label-sound');
+        if ($setting.length) {
+            var $wrapper = $(document.createElement('div'))
+                .attr('id', 'setting-volume')
+                .wiki('<br /> Volume: <<volume>>');
+            $setting.after($wrapper);
+            console.log('worked')
+        }
+    }, Engine.minDomActionDelay);
+    
+});
+
 /* return menu button */
 postdisplay['post-return-link'] = function () {
     if (tags().includes('menu')) {
@@ -3406,7 +3427,7 @@ $(document).on(':play-dive-scene', function () {
 function themeHandler () {
     var $html = $(document.documentElement);
     $html.removeClass('light');
-    if (settings.theme === 'Light') {
+    if (!settings.theme) {
         $html.addClass('light');
     }
 }
@@ -3447,9 +3468,8 @@ function ambienceSwitch () {
 
 Setting.addHeader('Appearance', "Change the game's appearance for a better reading experience.")
 
-Setting.addList('theme', {
-    label    : 'Select a theme:',
-    list     : ['Dark', 'Light'],
+Setting.addToggle('theme', {
+    label    : 'Night mode:',
     onInit   : themeHandler,
     onChange : themeHandler
 });
@@ -3466,7 +3486,7 @@ Setting.addToggle('animation', {
     label    : 'Skip diving animation:'
 });
 
-Setting.addHeader('Sound', 'Choose which sounds to mute.');
+Setting.addHeader('Sound', 'Choose which sounds to mute or adjust the volume.');
 
 // volume slider...
 
@@ -4292,8 +4312,8 @@ setup.gateWayTest = function () {
     &lt;/div&gt;
 &lt;/div&gt;
 &lt;div id=&#39;caption&#39;&gt;
-    &lt;div id=&#39;caption-text&#39;&gt;MENU&lt;/div&gt;
-    &lt;div id=&#39;caption-link&#39;&gt;RETURN&lt;/div&gt;
+    &lt;div id=&#39;caption-text&#39;&gt;Menu&lt;/div&gt;
+    &lt;div id=&#39;caption-link&#39;&gt;Return&lt;/div&gt;
 &lt;/div&gt;
 &lt;div id=&#39;story&#39;&gt;
     &lt;div id=&#39;passages&#39;&gt;
@@ -4347,7 +4367,7 @@ is limited by how much oxygen you have in your tanks.
 
 You can&#39;t dive without filling your tanks first.</tw-passagedata><tw-passagedata pid="10" name="gold-view" tags="bumper" position="1225,100">Funds: @@font-weight:bold;&lt;&lt;= $points&gt;&gt;@@G</tw-passagedata><tw-passagedata pid="11" name="tanks-view" tags="bumper" position="100,225">&lt;&lt;nobr&gt;&gt;
 &lt;&lt;set _readout to [
-    &#39;@@color:#cc0000;Empty@@&#39;,
+    &#39;@@color:#c00;Empty@@&#39;,
     &#39;@@color:#800000;Low@@&#39;, 
     &#39;@@color:#804000;Medium@@&#39;, 
     &#39;@@color:#808000;Medium@@&#39;, 
