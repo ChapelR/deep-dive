@@ -264,6 +264,56 @@ a.link-external:after {
     padding-top: 2em;
 }
 
+/* caption menu */
+
+#caption {
+    position: fixed;
+    display: block;
+    left: -13em; top: 0; bottom: 0;
+    margin-top: 5em;
+    margin-bottom: 3em;
+    padding: 2em 1em;
+    width: 10em;
+    background: #eee;
+    color: #111;
+    border: 2px solid #fff;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 10;
+    -webkit-transition-duration : 0.3s;
+	-moz-transition-duration : 0.3s;
+	-o-transition-duration : 0.3s;
+	transition-duration : 0.3s;
+}
+
+#caption-text {
+    font-size: 125%;
+    font-weight: bold;
+    transform: rotate(5deg);
+    letter-spacing: 0.1em;
+}
+
+#caption-link {
+    position: relative;
+    bottom: -6em;
+    font-size: 265%;
+    font-weight: bold;
+    transform: rotate(275deg);
+    letter-spacing: 0.5em;
+}
+
+#caption:hover {
+    background: #fff;
+}
+
+#caption:hover #caption-link {
+    color: #b22222;
+}
+
+#caption.open {
+    left: 0;
+}
+
 /* top bar */
 #top-bar {
     position: fixed;
@@ -408,6 +458,43 @@ a.link-external:after {
     
 }
 
+/* misc rules */
+
+#menu-heading {
+    display: block;
+    border-bottom: 1px solid #eee;
+}
+
+#menu-text {
+    font-size: 130%;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 0.7em;
+}
+
+#menu-icon {
+    margin-right: 0.5em;
+}
+
+#menu-icon img {
+    height: 2em;
+    width: 2em;
+    border: 1px solid #ccc;
+}
+
+/* font options */
+html.small {
+    font-size: 14px;
+}
+
+html.large {
+    font-size: 18px;
+}
+
+html.very-large {
+    font-size: 20px;
+}
+
 /* light theme */
 html.light body {
     background-color: #eee;
@@ -417,6 +504,34 @@ html.light body {
 html.light #ui-dialog-body, html.light #bumper {
     color: #eee;
     background-color: #111
+}
+
+html.light #notify {
+    border: 1px solid #111;
+    border-right: 0;
+}
+
+html.light #top-bar, html.light #bottom-bar {
+    background-color: #555;
+    border-color: #222;
+}
+
+html.light #caption {
+    background-color: #111;
+    color: #eee;
+    border-color: #333;
+}
+
+html.light #caption:hover {
+    background-color: #000;
+}
+
+html.light #caption:hover #caption-link {
+    color: #f00;
+}
+
+html.light #menu-heading {
+    border-color: #111;
 }
 
 html.light #story button { 
@@ -461,6 +576,10 @@ html.light #story span.link-disabled{
     #passages {
         padding-left: 0;
     }
+    #caption {
+        width: 6em;
+        left: -9em;
+    }
 }
 
 @media screen and (max-width: 800px) {
@@ -470,6 +589,16 @@ html.light #story span.link-disabled{
     #bumper {
         margin: 0 35%;
         width: 30%
+    }
+    #caption {
+        width: 2em;
+        left: -5em;
+    }
+    #caption-text {
+        display: none;
+    }
+    #caption-link {
+        transform: rotate(270deg);
     }
 }
 
@@ -499,6 +628,22 @@ html.light #story span.link-disabled{
     #bumper {
         margin: 0 25%;
         width: 50%
+    }
+    #caption {
+        top: 3em;
+        left: 0; right:0;
+        height: 1em;
+        width: 100%;
+        padding: 0; margin: 0;
+    }
+    #caption.open {
+        top: 5em;
+    }
+    #caption-link {
+        transform: none;
+        font-size: 100%;
+        bottom: 0;
+        text-align: center;
     }
 }
 
@@ -2619,14 +2764,25 @@ setup.preloader = {
     preload(sourceList);
     LoadScreen.unlock(ID);
 }());
-/* twine-user-script #18: "listeners.js" */
-// listeners.js: keyboard controls, among other things
+/* twine-user-script #18: "interface.js" */
+// interface.js: ui controls, among other things
+
+/* return menu button */
+postdisplay['post-return-link'] = function () {
+    if (tags().includes('menu')) {
+        $('#caption').addClass('open');
+    } else {
+        $('#caption').removeClass('open');
+    }
+}
 
 /* close / dismiss / return */
 $(document).on('keyup', function (e) {
     if (e.which == 27 || e.which == 81) { // esc or Q
         if (Dialog.isOpen()) {
             $('#ui-dialog-close').trigger('click');
+        } else if ($('#caption').hasClass('open')) {
+            $('#caption').trigger('click');
         } else {
             $('#return-link a').trigger('click');
         }
@@ -2643,6 +2799,14 @@ function accessMenuAlt () {
     $.wiki('<<audio "cocking" play>>');
     $(document).trigger(':access-menu');
 }
+
+/* caption */
+$('#caption').ariaClick({ label : 'Return to the game.' }, function () {
+    var ret = setup.returnPsg;
+    setup.returnPsg = '';
+    $.wiki('<<audio "switch" play>>');
+    Engine.play(ret);
+});
 
 /* menu bar */
 $('#ui-restart').ariaClick({ label : 'Restart the game.' }, function () {
@@ -2661,6 +2825,7 @@ $('#ui-sound').ariaClick({ label : 'Mute sound.' }, function () {
     var toggle = $('#ui-sound').hasClass('on');
     $('#ui-sound').toggleClass('on');
     SimpleAudio.mute = toggle;
+    settings.mute = !toggle;
 });
 $('#ui-about').ariaClick({ label : 'About.' }, function () {
     accessMenu();
@@ -2934,7 +3099,7 @@ $overlay
     .attr('id', 'fs-overlay')
     .addClass('hide')
     .appendTo(document.body);
-    
+
 window.overlay = window.overlay || {
     // basic return functions
     getElement : function () {
@@ -2944,19 +3109,29 @@ window.overlay = window.overlay || {
         return '#fs-overlay';
     },
     isOpen : function () {
-        return !$overlay.hasClass('hide');
+        return !$overlay.attr('display') === 'none';
     },
+    
+    handleTime : function (time) {
+        if (time && Number.isInteger(Number(time))) {
+            return time;
+        }
+        return 200;
+    },
+    
     // show and hide
-    toggle : function () {
-        $overlay.toggleClass('hide');
+    toggle : function (ms) {
+        ms = overlay.handleTime(ms);
+        $overlay.fadeToggle(ms);
         $(document).trigger({
-            'type'  : ($overlay.hasClass('hide')) ? ':dismiss-overlay' : ':show-overlay',
+            'type'  : (overlay.isOpen()) ? ':dismiss-overlay' : ':show-overlay',
             'ref'   : $overlay
         });
         return overlay.getElement();
     },
     show : function () {
-        $overlay.removeClass('hide');
+        ms = overlay.handleTime(ms);
+        $overlay.fadeIn(ms);
         $(document).trigger({
             'type'  : ':show-overlay',
             'ref'   : $overlay
@@ -2964,7 +3139,8 @@ window.overlay = window.overlay || {
         return overlay.getElement();
     },
     hide : function () {
-        $overlay.addClass('hide');
+        ms = overlay.handleTime(ms);
+        $overlay.fadeOut(ms);
         $(document).trigger({
             'type'  : ':dismiss-overlay',
             'ref'   : $overlay
@@ -3235,12 +3411,38 @@ function themeHandler () {
     }
 }
 
-function animationHandler () {
-    // TODO
+function fontInit () {
+    var $html = $(document.documentElement);
+    $html.removeClass('small large very-large');
+    if (settings.fonts !== 'Normal') {
+        $html.addClass(Util.slugify(settings.fonts));
+    }
 }
 
-function soundHandler () {
-    
+function fontHandler () {
+    fontInit();
+    Dialog.close();
+    UI.settings();
+}
+
+function muteHandler () {
+    SimpleAudio.mute = !settings.mute;
+    $('#ui-sound').toggleClass('on');
+}
+
+function soundSwitch (group) {
+    var action = (settings[group]) ? 'unmute' : 'mute';
+    $.wiki('<<audio ":' + group + '" ' + action + '>>');
+}
+
+function effectsSwitch () {
+    soundSwitch('effects');
+}
+function musicSwitch () {
+    soundSwitch('music');
+}
+function ambienceSwitch () {
+    soundSwitch('ambience');
 }
 
 Setting.addHeader('Appearance', "Change the game's appearance for a better reading experience.")
@@ -3252,33 +3454,44 @@ Setting.addList('theme', {
     onChange : themeHandler
 });
 
+Setting.addList('fonts', {
+    label    : 'Font size:',
+    list     : ['Small', 'Normal', 'Large', 'Very Large'],
+    default  : 'Normal',
+    onInit   : fontInit,
+    onChange : fontHandler
+});
+
 Setting.addToggle('animation', {
-    label    : 'Skip diving animation:',
-    onInit   : animationHandler,
-    onChange : animationHandler
+    label    : 'Skip diving animation:'
 });
 
 Setting.addHeader('Sound', 'Choose which sounds to mute.');
 
-Setting.addToggle('music', {
-    label    : 'Music',
+// volume slider...
+
+Setting.addToggle('mute', {
+    label    : 'All:',
     default  : true,
-    onInit   : soundHandler,
-    onChange : soundHandler
+    onChange : muteHandler
+});
+
+Setting.addToggle('music', {
+    label    : 'Music:',
+    default  : true,
+    onChange : musicSwitch
 });
 
 Setting.addToggle('effects', {
-    label    : 'Effects',
+    label    : 'Effects:',
     default  : true,
-    onInit   : soundHandler,
-    onChange : soundHandler
+    onChange : effectsSwitch
 });
 
 Setting.addToggle('ambience', {
-    label    : 'Ambience',
+    label    : 'Ambience:',
     default  : true,
-    onInit   : soundHandler,
-    onChange : soundHandler
+    onChange : ambienceSwitch
 });
 /* twine-user-script #23: "shake-macro-set.min.js" */
 /*! <<shake>> macro set for SugarCube 2.x */
@@ -3648,7 +3861,9 @@ window.bubbles = window.bubbles || {
 };
 
 $(document).on(':start-dive', function () {
-    bubbles.animation();
+    if (!settings.animation) {
+        bubbles.animation();
+    }
 });
 /* twine-user-script #27: "z-macros.js" */
     /* drop and treasure system macros */
@@ -3965,6 +4180,53 @@ Macro.add('upgradelist', {
 });
 
     /* end upgrade system macros */
+    
+    /* overlay macros */
+// <<overlay passage>>content<</overlay>>
+Macro.add('overlay', {
+       tags : null,
+    handler : function () {
+        
+        var content = '';
+        
+        if (this.args.length && typeof this.args[0] === 'string' && Story.has(this.args[0])) {
+            content = this.args[0];
+        } else {
+            content = this.payload[0].contents;
+        }
+        
+        overlay.run(content);
+        
+    }
+});
+
+// <<closeoverlay [fadeTime]>>
+Macro.add('closeoverlay', {
+    handler : function () {
+        
+        overlay.hide(this.args[0]);
+        
+    }
+});
+
+// <<openoverlay [fadeTime]>>
+Macro.add('openoverlay', {
+    handler : function () {
+        
+        overlay.show(this.args[0]);
+        
+    }
+});
+
+// <<toggleoverlay [fadeTime]>>
+Macro.add('toggleoverlay', {
+    handler : function () {
+        
+        overlay.toggle(this.args[0]);
+        
+    }
+});
+    /* end overlay macros */
 /* twine-user-script #28: "z-throughline.js" */
 // throughline.js
 State.variables.throughLine = {
@@ -4029,6 +4291,10 @@ setup.gateWayTest = function () {
         &lt;/span&gt;
     &lt;/div&gt;
 &lt;/div&gt;
+&lt;div id=&#39;caption&#39;&gt;
+    &lt;div id=&#39;caption-text&#39;&gt;MENU&lt;/div&gt;
+    &lt;div id=&#39;caption-link&#39;&gt;RETURN&lt;/div&gt;
+&lt;/div&gt;
 &lt;div id=&#39;story&#39;&gt;
     &lt;div id=&#39;passages&#39;&gt;
     &lt;/div&gt;
@@ -4071,13 +4337,9 @@ Icons by:
 Audio effects by: 
 * person
 * person
-* person</tw-passagedata><tw-passagedata pid="6" name="upgrades-menu" tags="menu" position="725,100">!! Upgrades:
-&lt;&lt;upgradelist&gt;&gt;
-
-&lt;&lt;returnFromMenu&gt;&gt;</tw-passagedata><tw-passagedata pid="7" name="loot-menu" tags="menu" position="850,100">!! Inventory:
-&lt;&lt;lootmenu&gt;&gt;
-
-&lt;&lt;returnFromMenu&gt;&gt;</tw-passagedata><tw-passagedata pid="8" name="about-gold" tags="dialog" position="975,100">Atlantis has fallen, but its currency lives on.
+* person</tw-passagedata><tw-passagedata pid="6" name="upgrades-menu" tags="menu" position="725,100">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/upgrades.svg]]@@ @@#menu-text;Upgrades:@@&lt;/span&gt;
+&lt;&lt;upgradelist&gt;&gt;</tw-passagedata><tw-passagedata pid="7" name="loot-menu" tags="menu" position="850,100">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/loot.svg]]@@ @@#menu-text;Inventory:@@&lt;/span&gt;
+&lt;&lt;lootmenu&gt;&gt;</tw-passagedata><tw-passagedata pid="8" name="about-gold" tags="dialog" position="975,100">Atlantis has fallen, but its currency lives on.
 
 Sell the things you find to earn more gold.
 Use that gold to buy better equipment.</tw-passagedata><tw-passagedata pid="9" name="about-oxygen" tags="dialog" position="1100,100">The amount of time you can spend underwater 
@@ -4137,7 +4399,7 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="12" 
 
 &lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="22" name="debug-scene-9" tags="" position="225,350">Hello, this is debug event 9.
 
-&lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="23" name="audio-init" tags="init" position="350,350">&lt;&lt;include &#39;effects-cache&#39;&gt;&gt;
+&lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="23" name="hub" tags="" position="350,350"></tw-passagedata><tw-passagedata pid="24" name="audio-init" tags="init" position="475,350">&lt;&lt;include &#39;effects-cache&#39;&gt;&gt;
 &lt;&lt;include &#39;music-cache&#39;&gt;&gt;
 &lt;&lt;include &#39;group-audio&#39;&gt;&gt;
 /% etc... %/
@@ -4149,7 +4411,7 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="12" 
 $(document).on(&#39;:start-dive&#39;, function () {
     $.wiki(&quot;&lt;&lt;masteraudio stop&gt;&gt;&lt;&lt;audio &#39;dive&#39; play&gt;&gt;&lt;&lt;playlist &#39;ambience&#39; shuffle play&gt;&gt;&quot;);
 });
-&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="24" name="effects-cache" tags="init" position="475,350">&lt;&lt;set _path to &#39;assets/audio/effects/&#39;&gt;&gt;
+&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="25" name="effects-cache" tags="init" position="600,350">&lt;&lt;set _path to &#39;assets/audio/effects/&#39;&gt;&gt;
 
 &lt;&lt;cacheaudio &#39;underwater1&#39; 
     `_path + &#39;underwater1.ogg&#39;` 
@@ -4204,7 +4466,7 @@ $(document).on(&#39;:start-dive&#39;, function () {
     `_path + &#39;page.mp3&#39;`&gt;&gt;
 &lt;&lt;cacheaudio &#39;switch&#39; 
     `_path + &#39;switch.ogg&#39;` 
-    `_path + &#39;switch.mp3&#39;`&gt;&gt;</tw-passagedata><tw-passagedata pid="25" name="music-cache" tags="init" position="600,350">&lt;&lt;set _path to &#39;assets/audio/music/&#39;&gt;&gt;
+    `_path + &#39;switch.mp3&#39;`&gt;&gt;</tw-passagedata><tw-passagedata pid="26" name="music-cache" tags="init" position="725,350">&lt;&lt;set _path to &#39;assets/audio/music/&#39;&gt;&gt;
 
 &lt;&lt;cacheaudio &#39;51oh&#39; 
     `_path + &#39;51oh.ogg&#39;` 
@@ -4232,7 +4494,32 @@ $(document).on(&#39;:start-dive&#39;, function () {
     //&#39;que-pena&#39;,
     &#39;raindrops&#39;,
     &#39;untitled&#39;
-]&gt;&gt;</tw-passagedata><tw-passagedata pid="26" name="group-audio" tags="init" position="725,350"></tw-passagedata><tw-passagedata pid="27" name="scenes-init" tags="init" position="850,350">&lt;&lt;scene &#39;debug-scene-1&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
+]&gt;&gt;</tw-passagedata><tw-passagedata pid="27" name="group-audio" tags="init" position="850,350">&lt;&lt;createaudiogroup &#39;:music&#39;&gt;&gt;
+    &lt;&lt;track &#39;51oh&#39;&gt;&gt;
+    &lt;&lt;track &#39;cibelle&#39;&gt;&gt;
+    &lt;&lt;track &#39;cidade-sol&#39;&gt;&gt;
+    &lt;&lt;track &#39;que-pena&#39;&gt;&gt;
+    &lt;&lt;track &#39;raindrops&#39;&gt;&gt;
+    &lt;&lt;track &#39;untitled&#39;&gt;&gt;
+&lt;&lt;/createaudiogroup&gt;&gt;
+&lt;&lt;createaudiogroup &#39;:ambience&#39;&gt;&gt;
+    &lt;&lt;track &#39;underwater1&#39;&gt;&gt;
+    &lt;&lt;track &#39;underwater2&#39;&gt;&gt;
+    &lt;&lt;track &#39;underwater3&#39;&gt;&gt;
+    &lt;&lt;track &#39;underwater4&#39;&gt;&gt;
+    &lt;&lt;track &#39;underwater5&#39;&gt;&gt;
+    &lt;&lt;track &#39;underwater6&#39;&gt;&gt;
+&lt;&lt;/createaudiogroup&gt;&gt;
+&lt;&lt;createaudiogroup &#39;:effects&#39;&gt;&gt;
+    &lt;&lt;track &#39;dive&#39;&gt;&gt;
+    &lt;&lt;track &#39;beep&#39;&gt;&gt;
+    &lt;&lt;track &#39;cocking&#39;&gt;&gt;
+    &lt;&lt;track &#39;dice&#39;&gt;&gt;
+    &lt;&lt;track &#39;next&#39;&gt;&gt;
+    &lt;&lt;track &#39;no&#39;&gt;&gt;
+    &lt;&lt;track &#39;page&#39;&gt;&gt;
+    &lt;&lt;track &#39;switch&#39;&gt;&gt;
+&lt;&lt;/createaudiogroup&gt;&gt;</tw-passagedata><tw-passagedata pid="28" name="scenes-init" tags="init" position="975,350">&lt;&lt;scene &#39;debug-scene-1&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-2&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-3&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 
@@ -4242,7 +4529,7 @@ $(document).on(&#39;:start-dive&#39;, function () {
 
 &lt;&lt;scene &#39;debug-scene-7&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-8&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;
-&lt;&lt;scene &#39;debug-scene-9&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="28" name="StoryInit" tags="" position="975,350">/% lock the load screen %/
+&lt;&lt;scene &#39;debug-scene-9&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="29" name="StoryInit" tags="" position="1100,350">/% lock the load screen %/
 &lt;&lt;set _id to LoadScreen.lock()&gt;&gt;
 
 /% basic setup %/
@@ -4272,16 +4559,16 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;loot 0&gt;&gt;
 
 /% dismiss the load screen %/
-&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;</tw-passagedata><tw-passagedata pid="29" name="npcs-init" tags="init" position="1100,350">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
-&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="30" name="vendor-Kim" tags="" position="1225,350">&#39;&#39;Your Money&#39;&#39;: @@#money;$points@@
+&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;</tw-passagedata><tw-passagedata pid="30" name="npcs-init" tags="init" position="1225,350">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
+&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="vendor-Kim" tags="" position="100,475">&#39;&#39;Your Money&#39;&#39;: @@#money;$points@@
 
 Kim: &quot;What have you got for me, diver?&quot;
 
-&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="merchant-Jack" tags="" position="100,475">&#39;&#39;Your Money&#39;&#39;: @@#money;$points@@
+&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="merchant-Jack" tags="" position="225,475">&#39;&#39;Your Money&#39;&#39;: @@#money;$points@@
 
 Jack: &quot;See anything you like?&quot;
 
-&lt;&lt;store&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="treasures-init" tags="init" position="225,475">/% 60 items %/
+&lt;&lt;store&gt;&gt;</tw-passagedata><tw-passagedata pid="33" name="treasures-init" tags="init" position="350,475">/% 60 items %/
 
 /% common treasures (28) %/
 &lt;&lt;treasure &#39;shiny stone&#39; &#39;common&#39;&gt;&gt;
@@ -4672,7 +4959,7 @@ A tool that can capture sound, cutting it into a glass disk
 to be replayed later at the owner&#39;s whim.
 
 While largely a bauble, it&#39;s intricate circuitry will be of value.
-&lt;&lt;/treasure&gt;&gt;</tw-passagedata><tw-passagedata pid="33" name="upgrades-init" tags="init" position="350,475">/% each upgrade needs to be tested and reinstated on game load %/
+&lt;&lt;/treasure&gt;&gt;</tw-passagedata><tw-passagedata pid="34" name="upgrades-init" tags="init" position="475,475">/% each upgrade needs to be tested and reinstated on game load %/
 
 &lt;&lt;upgrade &#39;Additional Tank x1&#39; 150&gt;&gt;
     &lt;&lt;set $scenesPerDive += 2&gt;&gt;
