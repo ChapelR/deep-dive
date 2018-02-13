@@ -461,6 +461,32 @@ a.link-external:after {
     
 }
 
+/* hub menu */
+#main-hub {
+    text-align: center;
+}
+
+#main-hub table {
+    margin: auto;
+}
+
+#main-hub td {
+    padding: 0 1em;
+}
+
+#main-hub a {
+    
+}
+
+#main-hub img {
+    width: 4em;
+    padding: 0.5em;
+}
+
+#main-hub img:hover {
+    background: #eee;
+}
+
 /* misc rules */
 
 #menu-heading {
@@ -483,6 +509,32 @@ a.link-external:after {
     height: 2em;
     width: 2em;
     border: 1px solid #ccc;
+}
+
+#main-talk-action {
+    display: block;
+    background-color: #eee;
+    color: #f00;
+    border: 4px outset #fff;
+    text-align: center;
+    padding: 0.5em;
+    font-weight: bold;
+}
+
+#main-talk-action:hover {
+    display: block;
+    background-color: #ccc;
+    border-color: #ddd;
+    text-decoration: none;
+}
+
+#main-talk-action:active {
+    border-style: inset;
+}
+
+#space-link button  {
+    width: 60%;
+    margin: 1.5em;
 }
 
 #setting-volume #volume-control {
@@ -541,6 +593,14 @@ html.light #menu-heading {
     border-color: #111;
 }
 
+html.light #main-hub img:hover {
+    background: #111;
+}
+
+html.light #main-hub img {
+    border-radius: 10px;
+}
+
 html.light #story button { 
     color: #fff;
     background-color: #ee82ee;
@@ -591,6 +651,9 @@ html.light #ui-dialog-title {
         width: 6em;
         left: -9em;
     }
+    #space-link button {
+        width: 75%;
+    }
 }
 
 @media screen and (max-width: 800px) {
@@ -622,6 +685,9 @@ html.light #ui-dialog-title {
     html {
         font-size: 90%;
     }
+    #space-link button {
+        width: 85%;
+    }
 }
 
 @media screen and (max-width: 450px) {
@@ -647,13 +713,17 @@ html.light #ui-dialog-title {
         padding: 0; margin: 0;
     }
     #caption.open {
-        margin-top: 5em;
+        padding-top: 5em;
     }
     #caption-link {
         transform: none;
         font-size: 100%;
         bottom: 0;
         text-align: center;
+    }
+    #main-hub img {
+        width: 3em;
+        padding: 0.2em;
     }
 }
 
@@ -855,7 +925,7 @@ Config.debug             = false;
 Config.loadDelay         = 200; // fouc
     
 Config.saves.isAllowed = function () {
-    if (tags().includesAny('no-save', 'menu')) {
+    if (tags().includesAny('no-save', 'menu') || State.variables.onDive) {
         $(document).one(':dialogclose', function () {
             UI.alert("You can't save right now.");
         });
@@ -868,16 +938,10 @@ Config.saves.onLoad = function (save) {
     
     prerender['save-update'] = function (_, t) {
         delete prerender[t];
+        Upgrade.update(); // re-add upgrade bonuses
+        // $.wiki('<<soundtrack>>');
         if (Story.has('update-save')) {
-            Upgrade.update(); // re-add upgrade bonuses
             $.wiki( Story.get('update-save').text );
-        }
-    };
-        
-    postrender['resume-audio'] = function (_, t) {
-        delete postrender[t];
-        if (Story.has('resume-audio')) {
-            $.wiki( Story.get('resume-audio').text );
         }
     };
         
@@ -2376,7 +2440,7 @@ window.Treasure.prototype = {
         $link
             .wiki(setup.drops.options.strings.description)
             .addClass('simple-inv treasure-description-link')
-            .ariaClick( function () {
+            .ariaClick({ label : 'Description.' }, function () {
                 if (Dialog.isOpen()) {
                     Dialog.close();
                 } 
@@ -2465,7 +2529,7 @@ window.Treasure.prototype = {
         $button // this is the confirm button, to attempt the sale
             .addClass('sell-confirm')
             .wiki(opts.strings.confirmSale)
-            .ariaClick( function () {
+            .ariaClick({ label : 'Attempt the sale.' }, function () {
                 var attempt = false,
                     luck  = (setup.drops.luck) || random(1, 100),
                     t = State.temporary,
@@ -2624,7 +2688,7 @@ setup.drops.sellMenu = function (npc) {
         $sell // the sell button
             .addClass('sell-item-link simple-inv')
             .wiki(setup.drops.options.strings.sell)
-            .ariaClick( function () {
+            .ariaClick({ label : 'Sell this.' }, function () {
                 // this event runs and opens our selling interface
                 Dialog.setup('Selling ' + treasure.name, 'sell-dialog');
                 Dialog.append(treasure.sellDialogContent(npc));
@@ -2728,7 +2792,7 @@ $(document).on(':sell-failure', function (e) {
 var dir = 'assets/images/',
     $preloader = $(document.createElement('div')),
     sourceList = [ // all image paths go here
-        // icons
+        // ui icons
         'icons/about.svg',
         'icons/cash.svg',
         'icons/data.svg',
@@ -2738,7 +2802,14 @@ var dir = 'assets/images/',
         'icons/settings.svg',
         'icons/tanks.svg',
         'icons/unmute.svg',
-        'icons/upgrades.svg'
+        'icons/upgrades.svg',
+        // hub icons
+        'icons/hub/buy.svg',
+        'icons/hub/cafe.svg',
+        'icons/hub/donation.svg',
+        'icons/hub/protectors.svg',
+        'icons/hub/sell.svg',
+        'icons/hub/workers.svg'
     ];
 
 sourceList = sourceList.map( function (src) { return dir + src });
@@ -2853,7 +2924,7 @@ function captionSetup (tag, title, content) {
         setup.caption.open();
     }
 }
-postdisplay['menu-return-link'] = function (t) {
+postdisplay['caoption-link'] = function (t) {
     setup.caption.close();
     if (State.variables.onDive) {
         var depth;
@@ -2870,11 +2941,11 @@ postdisplay['menu-return-link'] = function (t) {
 };
 
 function whatCaption (cls) {
-        return (setup.caption.$el.hasClass(cls));
-    }
+    return (setup.caption.$el.hasClass(cls));
+}
 
 /* caption listener */
-$('#caption').ariaClick({ label : 'Return to the game.' }, function (e) {
+$('#caption').ariaClick( function (e) {
     
     // menu handler
     if (whatCaption('menu')) {
@@ -2894,11 +2965,9 @@ $('#caption').ariaClick({ label : 'Return to the game.' }, function (e) {
     }
 });
 
-
 /*    KEYBOARD CONTROLS    */
 
 
-/* ESC and Q: close / dismiss / return / leave / caption option */
 $(document).on('keyup', function (e) {
     if (e.which == 27 || e.which == 81) { // esc or Q
         if (Dialog.isOpen()) {
@@ -2910,6 +2979,12 @@ $(document).on('keyup', function (e) {
         } else {
             // widget-based return links
             $('#return-link a').trigger('click');
+        }
+    } else if (e.which == 32) { // space bar
+        if ($('#main-talk-action').length) {
+            $('#main-talk-action').trigger('click');
+        } else {
+            $('#space-link button, #space-link a').trigger('click');
         }
     }
 });
@@ -2968,7 +3043,7 @@ $('#ui-sound').ariaClick({ label : 'Mute sound.' }, function () {
     settings.mute = !toggle;
 });
 $('#ui-about').ariaClick({ label : 'About.' }, function () {
-    accessMenu();
+    accessMenuAlt();
     Dialog.setup('About', 'about-dialog');
     Dialog.wiki( Story.get('about').text );
     Dialog.open();
@@ -3167,7 +3242,7 @@ Character.prototype = {
         $chitChat
             .wiki('Chit chat.')
             .addClass('npc-talk-link chit-chat')
-            .ariaClick( function () {
+            .ariaClick({ label : 'Chit chat.' }, function () {
                 $('#npc-talk-span').empty().wiki(inst.getTalk());
             });
         
@@ -3178,9 +3253,10 @@ Character.prototype = {
         if (otherAction) {
             // each action goes to a passage - the passage's name = 'role-characterName'
             $action
-                .addClass('npc-talk-link chit-chat')
+                .addClass('npc-talk-link')
+                .attr('id', 'main-talk-action')
                 .wiki(otherAction)
-                .ariaClick( function () {
+                .ariaClick({ label : 'Interact.' }, function () {
                     Dialog.close();
                     Engine.play(inst.role + '-' + inst.name, false);
                 });
@@ -3212,7 +3288,7 @@ Character.prototype = {
         $link
             .addClass('npc-action-link npc-talk')
             .wiki(text)
-            .ariaClick( function () {
+            .ariaClick({ label : 'Talk.' }, function () {
                 inst.action();
             });
         
@@ -3707,7 +3783,7 @@ window.Upgrade.listify = function (inv, buy /* include buy link? */) {
         $descrLink
             .wiki('?')
             .addClass('upgrade-description')
-            .ariaClick( function () {
+            .ariaClick({ label : 'Description.' }, function () {
                 Dialog.setup(upg, 'upgrade-description');
                 Dialog.wiki(upgrade.description);
                 Dialog.open();
@@ -3789,7 +3865,7 @@ window.Upgrade.prototype = {
         $link
             .addClass('upgrade-buy')
             .wiki('BUY')
-            .ariaClick( function () {
+            .ariaClick({ label : 'Buy this.' }, function () {
                 var purchase = inst.buy(), result;
                 if (purchase) {
                     result = 'You bought ' + inst.name + '.';
@@ -4432,8 +4508,8 @@ setup.gateWayTest = function () {
     &lt;/div&gt;
 &lt;/div&gt;
 &lt;div id=&#39;caption&#39;&gt;
-    &lt;div id=&#39;caption-text&#39;&gt;Menu&lt;/div&gt;
-    &lt;div id=&#39;caption-link&#39;&gt;Return&lt;/div&gt;
+    &lt;div id=&#39;caption-text&#39;&gt;&lt;/div&gt;
+    &lt;div id=&#39;caption-link&#39;&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;div id=&#39;story&#39;&gt;
     &lt;div id=&#39;passages&#39;&gt;
@@ -4458,6 +4534,8 @@ setup.gateWayTest = function () {
 &lt;&lt;dive 0&gt;&gt;
 
 [[next]]
+
+[[hub-main]]
 
 &lt;&lt;link &#39;map&#39;&gt;&gt;&lt;&lt;popup &#39;map&#39;&gt;&gt;&lt;&lt;/link&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="next" tags="" position="475,100">&lt;&lt;interact &#39;Kim&#39;&gt;&gt;
 &lt;&lt;interact &#39;Jack&#39;&gt;&gt;
@@ -4516,12 +4594,17 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="13" 
         &lt;&lt;set _track to setup.soundtrack.random()&gt;&gt;
         &lt;&lt;audio _track loop play&gt;&gt;
     &lt;&lt;/silently&gt;&gt;\
-&lt;&lt;/widget&gt;&gt;</tw-passagedata><tw-passagedata pid="14" name="linkWidgets" tags="widget" position="475,225">&lt;&lt;widget &#39;returnFromMenu&#39;&gt;&gt;\
+&lt;&lt;/widget&gt;&gt;</tw-passagedata><tw-passagedata pid="14" name="linkWidgets" tags="widget nobr" position="475,225">&lt;&lt;widget &#39;returnFromMenu&#39;&gt;&gt;
     @@#return-link;
         &lt;&lt;link &#39;Return&#39; setup.returnPsg&gt;&gt;
             &lt;&lt;set setup.returnPsg to &#39;&#39;&gt;&gt;
             &lt;&lt;audio &quot;switch&quot; play&gt;&gt;
-        &lt;&lt;/link&gt;&gt;\
+        &lt;&lt;/link&gt;&gt;
+    @@
+&lt;&lt;/widget&gt;&gt;
+&lt;&lt;widget &#39;spacelink&#39;&gt;&gt;\
+    @@#space-link;
+        &lt;&lt;button $args[0] $args[1]&gt;&gt;&lt;&lt;/button&gt;&gt;
     @@
 &lt;&lt;/widget&gt;&gt;</tw-passagedata><tw-passagedata pid="15" name="debug-scene-1" tags="" position="600,225">Hello, this is debug event 1.
 
@@ -4541,7 +4624,17 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="13" 
 
 &lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="23" name="debug-scene-9" tags="" position="350,350">Hello, this is debug event 9.
 
-&lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="24" name="hub" tags="" position="475,350"></tw-passagedata><tw-passagedata pid="25" name="audio-init" tags="init" position="600,350">&lt;&lt;include &#39;effects-cache&#39;&gt;&gt;
+&lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="24" name="dive-prep" tags="hub" position="475,350">/% prep for dive %/\</tw-passagedata><tw-passagedata pid="25" name="hub-main" tags="" position="600,350">/% no tag -- tag adds return link %/\
+/% main menu %/\
+&lt;div id=&#39;main-hub&#39;&gt;\
+|[img[assets/images/icons/hub/sell.svg][hub-vendor]]|[img[assets/images/icons/hub/buy.svg][hub-shop]]|
+|[[Visit Kim&#39;s shop.|hub-vendor]]|[[Visit the upgrade shop.|hub-shop]]|
+|[img[assets/images/icons/hub/protectors.svg][hub-protectors]]|[img[assets/images/icons/hub/workers.svg][hub-workers]]|
+|[[Visit the Protectors.|hub-protectors]]|[[Visit the living quarters.|hub-workers]]|
+|[img[assets/images/icons/hub/cafe.svg][hub-cafe]]|[img[assets/images/icons/hub/donations.svg][hub-temple]]|
+|[[Visit the cafe.|hub-cafe]]|[[Visit the temple.|hub-temple]]|
+&lt;&lt;spacelink &#39;Dive&#39; &#39;dive-prep&#39;&gt;&gt;
+\&lt;/div&gt;</tw-passagedata><tw-passagedata pid="26" name="hub-shop" tags="hub" position="725,350">/% buy %/\</tw-passagedata><tw-passagedata pid="27" name="hub-vendor" tags="hub" position="850,350">/% sell %/\</tw-passagedata><tw-passagedata pid="28" name="hub-cafe" tags="hub" position="975,350">/% chill %/\</tw-passagedata><tw-passagedata pid="29" name="hub-protectors" tags="hub" position="1100,350">/% police %/\</tw-passagedata><tw-passagedata pid="30" name="hub-temple" tags="hub" position="1225,350">/% donate %/\</tw-passagedata><tw-passagedata pid="31" name="hub-workers" tags="hub" position="100,475">/% slums %/\</tw-passagedata><tw-passagedata pid="32" name="audio-init" tags="init" position="225,475">&lt;&lt;include &#39;effects-cache&#39;&gt;&gt;
 &lt;&lt;include &#39;music-cache&#39;&gt;&gt;
 &lt;&lt;include &#39;group-audio&#39;&gt;&gt;
 /% etc... %/
@@ -4553,7 +4646,7 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="13" 
 $(document).on(&#39;:start-dive&#39;, function () {
     $.wiki(&quot;&lt;&lt;masteraudio stop&gt;&gt;&lt;&lt;audio &#39;dive&#39; play&gt;&gt;&lt;&lt;playlist &#39;ambience&#39; shuffle play&gt;&gt;&quot;);
 });
-&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="26" name="effects-cache" tags="init" position="725,350">&lt;&lt;set _path to &#39;assets/audio/effects/&#39;&gt;&gt;
+&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="33" name="effects-cache" tags="init" position="350,475">&lt;&lt;set _path to &#39;assets/audio/effects/&#39;&gt;&gt;
 
 &lt;&lt;cacheaudio &#39;underwater1&#39; 
     `_path + &#39;underwater1.ogg&#39;` 
@@ -4608,7 +4701,7 @@ $(document).on(&#39;:start-dive&#39;, function () {
     `_path + &#39;page.mp3&#39;`&gt;&gt;
 &lt;&lt;cacheaudio &#39;switch&#39; 
     `_path + &#39;switch.ogg&#39;` 
-    `_path + &#39;switch.mp3&#39;`&gt;&gt;</tw-passagedata><tw-passagedata pid="27" name="music-cache" tags="init" position="850,350">&lt;&lt;set _path to &#39;assets/audio/music/&#39;&gt;&gt;
+    `_path + &#39;switch.mp3&#39;`&gt;&gt;</tw-passagedata><tw-passagedata pid="34" name="music-cache" tags="init" position="475,475">&lt;&lt;set _path to &#39;assets/audio/music/&#39;&gt;&gt;
 
 &lt;&lt;cacheaudio &#39;51oh&#39; 
     `_path + &#39;51oh.ogg&#39;` 
@@ -4619,6 +4712,9 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;cacheaudio &#39;cidade-sol&#39; 
     `_path + &#39;cidade-sol.ogg&#39;` 
     `_path + &#39;cidade-sol.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;milan&#39; 
+    `_path + &#39;milan.ogg&#39;` 
+    `_path + &#39;milan.mp3&#39;`&gt;&gt;
 &lt;&lt;cacheaudio &#39;que-pena&#39; 
     `_path + &#39;que-pena.ogg&#39;` 
     `_path + &#39;que-pena.mp3&#39;`&gt;&gt;
@@ -4633,13 +4729,15 @@ $(document).on(&#39;:start-dive&#39;, function () {
     &#39;51oh&#39;,
     &#39;cibelle&#39;,
     //&#39;cidade-sol&#39;,
+    &#39;milan&#39;,
     //&#39;que-pena&#39;,
     &#39;raindrops&#39;,
     &#39;untitled&#39;
-]&gt;&gt;</tw-passagedata><tw-passagedata pid="28" name="group-audio" tags="init" position="975,350">&lt;&lt;createaudiogroup &#39;:music&#39;&gt;&gt;
+]&gt;&gt;</tw-passagedata><tw-passagedata pid="35" name="group-audio" tags="init" position="600,475">&lt;&lt;createaudiogroup &#39;:music&#39;&gt;&gt;
     &lt;&lt;track &#39;51oh&#39;&gt;&gt;
     &lt;&lt;track &#39;cibelle&#39;&gt;&gt;
     &lt;&lt;track &#39;cidade-sol&#39;&gt;&gt;
+    &lt;&lt;track &#39;milan&#39;&gt;&gt;
     &lt;&lt;track &#39;que-pena&#39;&gt;&gt;
     &lt;&lt;track &#39;raindrops&#39;&gt;&gt;
     &lt;&lt;track &#39;untitled&#39;&gt;&gt;
@@ -4661,7 +4759,7 @@ $(document).on(&#39;:start-dive&#39;, function () {
     &lt;&lt;track &#39;no&#39;&gt;&gt;
     &lt;&lt;track &#39;page&#39;&gt;&gt;
     &lt;&lt;track &#39;switch&#39;&gt;&gt;
-&lt;&lt;/createaudiogroup&gt;&gt;</tw-passagedata><tw-passagedata pid="29" name="scenes-init" tags="init" position="1100,350">&lt;&lt;scene &#39;debug-scene-1&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
+&lt;&lt;/createaudiogroup&gt;&gt;</tw-passagedata><tw-passagedata pid="36" name="scenes-init" tags="init" position="725,475">&lt;&lt;scene &#39;debug-scene-1&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-2&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-3&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 
@@ -4671,7 +4769,7 @@ $(document).on(&#39;:start-dive&#39;, function () {
 
 &lt;&lt;scene &#39;debug-scene-7&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-8&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;
-&lt;&lt;scene &#39;debug-scene-9&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="30" name="StoryInit" tags="" position="1225,350">/% lock the load screen %/
+&lt;&lt;scene &#39;debug-scene-9&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="37" name="StoryInit" tags="" position="850,475">/% lock the load screen %/
 &lt;&lt;set _id to LoadScreen.lock()&gt;&gt;
 
 /% basic setup %/
@@ -4702,16 +4800,16 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;loot 0&gt;&gt;
 
 /% dismiss the load screen %/
-&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="npcs-init" tags="init" position="100,475">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
-&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="vendor-Kim" tags="shop" position="225,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Loot Vendor&lt;/span&gt;&lt;/span&gt;
+&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;</tw-passagedata><tw-passagedata pid="38" name="npcs-init" tags="init" position="975,475">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
+&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="39" name="vendor-Kim" tags="shop" position="1100,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Loot Vendor&lt;/span&gt;&lt;/span&gt;
 
 Kim: &quot;What have you got for me, diver?&quot;
 
-&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="33" name="merchant-Jack" tags="shop" position="350,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Upgrade Shop&lt;/span&gt;&lt;/span&gt;
+&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="40" name="merchant-Jack" tags="shop" position="1225,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Upgrade Shop&lt;/span&gt;&lt;/span&gt;
 
 Jack: &quot;See anything you like?&quot;
 
-&lt;&lt;store&gt;&gt;</tw-passagedata><tw-passagedata pid="34" name="treasures-init" tags="init" position="475,475">/% 60 items %/
+&lt;&lt;store&gt;&gt;</tw-passagedata><tw-passagedata pid="41" name="treasures-init" tags="init" position="100,600">/% 60 items %/
 
 /% common treasures (28) %/
 &lt;&lt;treasure &#39;shiny stone&#39; &#39;common&#39;&gt;&gt;
@@ -5102,7 +5200,7 @@ A tool that can capture sound, cutting it into a glass disk
 to be replayed later at the owner&#39;s whim.
 
 While largely a bauble, it&#39;s intricate circuitry will be of value.
-&lt;&lt;/treasure&gt;&gt;</tw-passagedata><tw-passagedata pid="35" name="upgrades-init" tags="init" position="600,475">/% each upgrade needs to be tested and reinstated on game load %/
+&lt;&lt;/treasure&gt;&gt;</tw-passagedata><tw-passagedata pid="42" name="upgrades-init" tags="init" position="225,600">/% each upgrade needs to be tested and reinstated on game load %/
 
 &lt;&lt;upgrade &#39;Additional Tank x1&#39; 150&gt;&gt;
     &lt;&lt;set $scenesPerDive += 2&gt;&gt;
