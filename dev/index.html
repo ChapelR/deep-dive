@@ -905,6 +905,7 @@ if (Config.debug) {
 }
 
 setup.returnPsg = '';
+setup.returnFromShop = 'next';
 $('#bumper').css('display', 'none');
 /* twine-user-script #6: "dialog-api-macro-set.js" */
 // dialog API macro set, by chapel; for sugarcube 2
@@ -2773,6 +2774,132 @@ setup.preloader = {
 /* twine-user-script #18: "interface.js" */
 // interface.js: ui controls, among other things
 
+
+/*    CAPTION API    */
+
+
+/* caption interface */
+setup.caption = {
+    
+    $el : $('#caption'),
+    
+    $title : $('#caption-text'),
+    
+    $main : $('#caption-link'),
+    
+    open : function () {
+        setup.caption.$el.addClass('open');
+    },
+    
+    close : function () {
+        setup.caption.$el.removeClass('open');
+    },
+    
+    toggle : function () {
+        setup.caption.$el.toggleClass('open');
+    },
+    
+    setTitle : function (str) {
+        if (!str || typeof str !== 'string') {
+            str = 'menu';
+        }
+        setup.caption.$title.empty().wiki(str);
+    },
+    
+    setContent : function (str) {
+        if (!str || typeof str !== 'string') {
+            str = 'return';
+        }
+        setup.caption.$main.empty().wiki(str);
+    },
+    
+    stripClasses : function ( /* class list */ ) {
+        // cache the 'open' class
+        var openClass = setup.caption.$el.hasClass('open');
+        setup.caption.$el.removeClass();
+        if (openClass) {
+            setup.caption.$el.addClass('open');
+        }
+    },
+    
+    setClasses : function ( /* class list */ ) {
+        // pull classes from args
+        var classes = [].slice.call(arguments);
+        classes = classes.flatten().join(' ');
+        // do the thing
+        setup.caption.stripClasses();
+        setup.caption.$el.addClass(classes);
+    },
+    
+    opts : function (title, main, classes) {
+        if (classes) {
+            classes = [].slice.call(arguments);
+            classes = classes.slice(2).flatten();
+            setup.caption.setClasses(classes);
+        }
+        setup.caption.setContent(main);
+        setup.caption.setTitle(title);
+    }
+};
+
+/* handle tag-based captions */
+function captionSetup (tag, title, content) {
+    if (tags().includes(tag)) {
+        setup.caption.opts(title, content, tag);
+        setup.caption.open();
+    }
+}
+postdisplay['menu-return-link'] = function (t) {
+    setup.caption.close();
+    captionSetup('menu', 'menu', 'return');
+    captionSetup('shop', 'vendor', 'leave');
+};
+
+/* caption listener */
+$('#caption').ariaClick({ label : 'Return to the game.' }, function (e) {
+    function check (cls) {
+        return (setup.caption.$el.hasClass(cls));
+    }
+    
+    // menu handler
+    if (check('menu')) {
+        var ret = setup.returnPsg;
+        setup.returnPsg = '';
+        $.wiki('<<audio "switch" play>>');
+        Engine.play(ret);
+        return;
+    }
+    if (check('shop')) {
+        $.wiki('<<audio "switch" play>>');
+        Engine.play(setup.returnFromShop);
+        return;
+    }
+});
+
+
+/*    KEYBOARD CONTROLS    */
+
+
+/* ESC and Q: close / dismiss / return / leave / caption option */
+$(document).on('keyup', function (e) {
+    if (e.which == 27 || e.which == 81) { // esc or Q
+        if (Dialog.isOpen()) {
+            // dialog window
+            $('#ui-dialog-close').trigger('click');
+        } else if (setup.caption.$el.hasClass('open')) {
+            // caption-based controls
+            setup.caption.$el.trigger('click');
+        } else {
+            // widget-based return links
+            $('#return-link a').trigger('click');
+        }
+    }
+});
+
+
+/*    MISC FUNCTIONS    */
+
+
 /* settings patch */
 $(document).on(':dialogopen', function () {
     setTimeout( function () {
@@ -2788,28 +2915,6 @@ $(document).on(':dialogopen', function () {
     
 });
 
-/* return menu button */
-postdisplay['post-return-link'] = function () {
-    if (tags().includes('menu')) {
-        $('#caption').addClass('open');
-    } else {
-        $('#caption').removeClass('open');
-    }
-}
-
-/* close / dismiss / return */
-$(document).on('keyup', function (e) {
-    if (e.which == 27 || e.which == 81) { // esc or Q
-        if (Dialog.isOpen()) {
-            $('#ui-dialog-close').trigger('click');
-        } else if ($('#caption').hasClass('open')) {
-            $('#caption').trigger('click');
-        } else {
-            $('#return-link a').trigger('click');
-        }
-    }
-});
-
 /* access menu event */
 function accessMenu () {
     $.wiki('<<audio "page" play>>');
@@ -2821,13 +2926,9 @@ function accessMenuAlt () {
     $(document).trigger(':access-menu');
 }
 
-/* caption */
-$('#caption').ariaClick({ label : 'Return to the game.' }, function () {
-    var ret = setup.returnPsg;
-    setup.returnPsg = '';
-    $.wiki('<<audio "switch" play>>');
-    Engine.play(ret);
-});
+
+/*    USER INTERFACE    */
+
 
 /* menu bar */
 $('#ui-restart').ariaClick({ label : 'Restart the game.' }, function () {
@@ -2891,8 +2992,6 @@ $('#stat-oxygen').ariaClick({ label : 'Oxygen tanks.' }, function () {
     Dialog.wiki(Story.get('about-oxygen').text);
     Dialog.open();
 });
-
-/* keyboard */
 /* twine-user-script #19: "npcs.js" */
 // npcs.js: a class system to quickly generate new NPCs
 // bare-bones
@@ -4580,11 +4679,11 @@ $(document).on(&#39;:start-dive&#39;, function () {
 
 /% dismiss the load screen %/
 &lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;</tw-passagedata><tw-passagedata pid="30" name="npcs-init" tags="init" position="1225,350">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
-&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="vendor-Kim" tags="" position="100,475">&#39;&#39;Your Money&#39;&#39;: @@#money;$points@@
+&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="vendor-Kim" tags="shop" position="100,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Loot Vendor&lt;/span&gt;&lt;/span&gt;
 
 Kim: &quot;What have you got for me, diver?&quot;
 
-&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="merchant-Jack" tags="" position="225,475">&#39;&#39;Your Money&#39;&#39;: @@#money;$points@@
+&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="merchant-Jack" tags="shop" position="225,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Upgrade Shop&lt;/span&gt;&lt;/span&gt;
 
 Jack: &quot;See anything you like?&quot;
 
