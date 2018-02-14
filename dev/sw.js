@@ -1,4 +1,5 @@
 // service workers
+/*
 function cacheFonts () {
     var mainDir = '/assets/';
     // cache font assets
@@ -10,7 +11,7 @@ function cacheFonts () {
         ];
     fontList = fontList.map( function (font) { return mainDir + fontDir + font; });
     return fontList;
-}
+}*/
 
 function cacheImages () {
     var mainDir = '/assets/';
