@@ -125,7 +125,7 @@ self.addEventListener('install', function(event) {
       .then(function(cache) {
         // console.log(urlsToCache);
         return cache.addAll(urlsToCache);
-      }).catch( function (err) {} )
+      })
   );
 });
 
@@ -139,6 +139,6 @@ self.addEventListener('fetch', function(event) {
         }
         return fetch(event.request, { mode : 'no-cors' });
       }
-    ).catch( function (err) {} )
+    )
   );
 });
