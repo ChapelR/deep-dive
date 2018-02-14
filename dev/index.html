@@ -4078,7 +4078,6 @@ Macro.add('volume', {
 	}
 });
 /* twine-user-script #27: "workers.js" */
-var id = LoadScreen.lock();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js', { scope : './' }).then(function(reg) {
     console.log('Workers registered: ' + reg.scope);
@@ -4086,7 +4085,6 @@ if ('serviceWorker' in navigator) {
     console.log('Workers could not be registered.', err);
   });
 }
-LoadScreen.unlock(id);
 /* twine-user-script #28: "z-bubbles.js" */
 window.bubbles = window.bubbles || {
     animate : function () {
