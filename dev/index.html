@@ -932,7 +932,7 @@ setup.build = {
 
 // web app manifest 
 if (setup.build.web) {
-    $(document.head).append('<link rel="manifest" href="app/manifest.json" type="application/manifest+json" />');
+    $(document.head).append('<link rel="manifest" href="app/manifest.json" />');
 }
 
 // icon
@@ -4076,7 +4076,15 @@ Macro.add('volume', {
 			.appendTo(this.output);
 	}
 });
-/* twine-user-script #27: "z-bubbles.js" */
+/* twine-user-script #27: "workers.js" */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/my-app/sw.js').then(function(reg) {
+    console.log('Yey!', reg);
+  }).catch(function(err) {
+    console.log('Boo!', err);
+  });
+}
+/* twine-user-script #28: "z-bubbles.js" */
 window.bubbles = window.bubbles || {
     animate : function () {
         var canvas = document.getElementById('bgCanvas');
@@ -4164,7 +4172,7 @@ $(document).on(':start-dive', function () {
         bubbles.animation();
     }
 });
-/* twine-user-script #28: "z-macros.js" */
+/* twine-user-script #29: "z-macros.js" */
     /* drop and treasure system macros */
 
 // `<<treasure itemName rarityTier>>Description of item...<</treasure>>` (goes in StoryInit...)
@@ -4526,7 +4534,7 @@ Macro.add('toggleoverlay', {
     }
 });
     /* end overlay macros */
-/* twine-user-script #29: "z-throughline.js" */
+/* twine-user-script #30: "z-throughline.js" */
 // throughline.js
 State.variables.throughLine = {
     dives : 0,
