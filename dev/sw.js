@@ -9,6 +9,7 @@ function cacheFonts () {
             'rob-m.ttf'
         ];
     fontList.map( function (font) { return mainDir + fontDir + font; });
+    return fontList;
 }
 
 function cacheImages () {
@@ -125,7 +126,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
-        console.log('Opened cache');
+        console.log(urlsToCache);
         return cache.addAll(urlsToCache);
       })
   );
@@ -139,7 +140,7 @@ self.addEventListener('fetch', function(event) {
         if (response) {
           return response;
         }
-        return fetch(event.request);
+        return fetch(event.request, { mode : 'no-cors' });
       }
     )
   );
