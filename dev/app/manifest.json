@@ -33,6 +33,5 @@
         "sizes": "192x192",
         "type": "image/png"
     }],
-    "theme_color": "#f00",
-    
+    "theme_color": "#f00"    
 }
