@@ -93,7 +93,7 @@ function cacheAudio () {
         'untitled.ogg' 
     ];
     musicList = musicList.map( function (song) { return mainDir + musicDir + song; });
-    return musicList;
+    return musicList.concat(effectList);
 }
 
 function cacheIcons () {
@@ -112,7 +112,7 @@ function cacheIcons () {
 } 
 
 function createCacheArray () {
-    return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons());
+    return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons(), ['index.html', '.']);
 }
 
 var CACHE_NAME = 'deep-dive-cache',
