@@ -144,7 +144,7 @@ self.addEventListener('fetch', function (e) {
     
     function onFetch (ev, opts) {
         
-        ev.respondWith(fetch(request).then(function (response) {
+        ev.respondWith(fetch(ev.request).then(function (response) {
             caches.match(ev.request).then(function (response) { 
                 if (!response) {
                     throw new Error('not cached');
