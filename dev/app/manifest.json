@@ -3,7 +3,7 @@
     "short_name": "DeepDive",
     "start_url" : "../index.html",
     "scope": "..",
-    "display": "fullscreen",
+    "display": "standalone",
     "orientation": "portrait",
     "background_color": "#111",
     "description": "Dive in.",

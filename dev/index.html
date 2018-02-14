@@ -923,6 +923,7 @@ setup.build = {
     mobile  : $(window).width <= 800,
     web     : (typeof window.nw === 'undefined'),
     debug   : false,
+    workers : false,
     log     : function () {
         var str = 'Version: ' + setup.build.version + '\nWeb: ' + setup.build.web + '\nMobile: ' + setup.build.mobile + '\nDebug: ' + setup.build.debug;
         console.log(str);
@@ -4079,9 +4080,9 @@ Macro.add('volume', {
 /* twine-user-script #27: "workers.js" */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js', { scope : './' }).then(function(reg) {
-    console.log('Yey!', reg);
+    console.log('Workers registered: ' + reg.scope);
   }).catch(function(err) {
-    console.log('Boo!', err);
+    console.log('Workers could not be registered.', err);
   });
 }
 /* twine-user-script #28: "z-bubbles.js" */
