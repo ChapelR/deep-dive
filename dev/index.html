@@ -916,12 +916,34 @@ Macro.get('bugreport').fence = ['```', '```'];
 /*! <<checkvars>> macro for SugarCube 2.x */
 !function(){"use strict";if("undefined"==typeof version||"undefined"==typeof version.title||"SugarCube"!==version.title||"undefined"==typeof version.major||version.major<2)throw new Error("<<checkvars>> macro requires SugarCube 2.0 or greater, aborting load");Macro.add("checkvars",{handler:function(){function toString(value,indent){var baseType=typeof value;switch(baseType){case"number":return isNaN(value)?"NaN":isFinite(value)?String(value):"Infinity";case"string":return JSON.stringify(value);case"function":return"(function)";default:if("object"!==baseType||null==value)return String(value);var objType=Object.prototype.toString.call(value);if("[object Date]"===objType)return'(object: Date, value: "'+value.toISOString()+'")';if("[object RegExp]"===objType)return"(object: RegExp, value: "+value.toString()+")";var opener,closer,result=[],indentText="  ";return indent||(indent=""),("[object Set]"===objType||value instanceof Set)&&(value=Array.from(value)),Array.isArray(value)?(opener="[\n",closer="\n"+indent+"]",value.forEach(function(p,i){result.push(indent+indentText+i+" ⇒ "+toString(value[i],indent+indentText))}),Object.keys(value).forEach(function(p){/^\d+$/.test(p)||result.push(indent+indentText+toString(p)+" ⇒ "+toString(value[p],indent+indentText))})):"[object Map]"===objType||value instanceof Map?(opener="{\n",closer="\n"+indent+"}",Array.from(value).map(function(kv){result.push(indent+indentText+toString(kv[0],indent+indentText)+" ⇒ "+toString(kv[1],indent+indentText))})):(opener="{\n",closer="\n"+indent+"}",Object.keys(value).forEach(function(p){result.push(indent+indentText+toString(p)+" ⇒ "+toString(value[p],indent+indentText))})),opener+result.join(",\n")+closer}}var dialog,sv=State.variables,names=Object.keys(sv);if(dialog=UI.setup("Story $variables","checkvars"),0===names.length)return dialog.innerHTML="<h1>Story $variables (<code>State.variables</code>):</h1><p><em>No $variables currently set…</em></p>",void UI.open();dialog.innerHTML="<h1>Story $variables (<code>State.variables</code>):</h1><table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody></tbody></table>"+(/applewebkit|chrome/.test(Browser.userAgent)?"":'<div class="scroll-pad">&nbsp;</div>');var tbody=dialog.querySelector("tbody");names.sort(function(a,b){return Util.isNumeric(a)&&Util.isNumeric(b)?Number(a)-Number(b):a.localeCompare(b)});for(var i=0;i<names.length;i++){var tr=document.createElement("tr"),tdName=document.createElement("td"),tdValue=document.createElement("td");tdName.textContent="$"+names[i],tdValue.textContent=toString(sv[names[i]]),tr.appendChild(tdName),tr.appendChild(tdValue),tbody.appendChild(tr)}UI.open()}})}();
 /* twine-user-script #5: "config.js" */
+// build options
+setup.build = {
+    verNo   : 50,
+    version : '0.5.0',
+    mobile  : $(window).width <= 800,
+    web     : (typeof window.nw === 'undefined'),
+    debug   : false,
+    log     : function () {
+        var str = 'Version: ' + setup.build.version + '\nWeb: ' + setup.build.web + '\nMobile: ' + setup.build.mobile + '\nDebug: ' + setup.build.debug;
+        console.log(str);
+        return str;
+    }
+};
+
+// web app manifest 
+if (setup.build.web) {
+    $(document.head).append('<link rel="manifest" href="app/manifest.json" type="application/manifest+json" />');
+}
+
+// icon
+$(document.head).append('<link rel="icon" href="app/icon/home96.png" type="image/png" />');
+
 // configuration settings
 Config.history.controls  = false;
 Config.history.maxStates = 1;
 Config.saves.autosave    = 'save';
-Config.saves.version     = 'pre-alpha';
-Config.debug             = false;
+Config.saves.version     = setup.build.verNo;
+Config.debug             = setup.build.debug;
 Config.loadDelay         = 200; // fouc
     
 Config.saves.isAllowed = function () {
@@ -950,6 +972,7 @@ Config.saves.onLoad = function (save) {
 // debug features
 if (Config.debug) {
     $(document).on('keyup', function (e) {
+        // debug hot keys
         if (e.which == 86 && e.shiftKey) {
             $.wiki('<<checkvars>>');
         }
@@ -2261,7 +2284,67 @@ Macro.add('linkedinventory', {
 });
 
 /* "simple inventory" is becoming more and more of a misnomer */
-/* twine-user-script #16: "drops.js" */
+/* twine-user-script #16: "dives.js" */
+function diveAvailable (depth) {
+    var n = Number(depth),
+        sv = State.variables,
+        ret = {
+            suit : false,
+            gate : false
+        };
+    if (!Number.isInteger(n) || n > 3 || n < 0) {
+        console.error('diveAvailable() -> invalid depth ' + n);
+        return;
+    }
+    // check if player meets dive conditions
+    ret.suit = sv.playerUpgrades.has('Pressure Suit Lv.' + (depth + 1));
+    ret.gate = sv.throughLine.stage > 10 * depth;
+    
+    return ret;
+}
+
+function unlockDives () {
+    var sv = State.variables, test, i, depth;
+    
+    // test each level of available dive and find the highest
+    for (i = 4; i >= 0; i--) {
+        test = diveAvailable(i);
+        if (test.suit && test.gate) {
+            depth = i;
+            break;
+        } else if (i <= 0) {
+            depth = 0;
+        }
+    }
+    
+    sv.depthUnlocked = depth;
+    return depth;
+}
+
+// return the reason why, from an object retrieved from `diveAvailable()`
+function diveExplanation (diveTest) {
+    if (!diveTest || typeof diveTest !== 'object' || !diveTest.hasOwnProperty('suit')) {
+        console.error('diveExplanation() -> not a valid object in param');
+        return;
+    }
+    
+    var explanation = [];
+    if (!ret.suit) {
+        explanation.push("Your suit won't withstand the pressure at that depth.");
+    }
+    if (!ret.gate) {
+        explanation.push("You haven't yet found a gate that leads to this layer.");
+    }
+    return explanation;
+}
+
+// globalize
+window.Dive = window.Dive || {
+    available : diveAvailable,  // run on invalid selection for object
+    unlock    : unlockDives,    // place in 'dive-prep'
+    explain   : diveExplanation // process object for an explanation
+};
+/* twine-user-script #17: "drops.js" */
 // drops.js
 setup.drops = {};
 setup.drops.options = {
@@ -2788,7 +2871,7 @@ $(document).on(':sell-failure', function (e) {
     
     (Config.debug) && console.log('SALE FAILURE: Vendor ' + e.vendor.name + ' loyalty is now -> ' + e.vendor.loyalty);
 });
-/* twine-user-script #17: "image-cache.js" */
+/* twine-user-script #18: "image-cache.js" */
 var dir = 'assets/images/',
     $preloader = $(document.createElement('div')),
     sourceList = [ // all image paths go here
@@ -2806,7 +2889,7 @@ var dir = 'assets/images/',
         // hub icons
         'icons/hub/buy.svg',
         'icons/hub/cafe.svg',
-        'icons/hub/donation.svg',
+        'icons/hub/donations.svg',
         'icons/hub/protectors.svg',
         'icons/hub/sell.svg',
         'icons/hub/workers.svg'
@@ -2846,7 +2929,7 @@ setup.preloader = {
     preload(sourceList);
     LoadScreen.unlock(ID);
 }());
-/* twine-user-script #18: "interface.js" */
+/* twine-user-script #19: "interface.js" */
 // interface.js: ui controls, among other things
 
 
@@ -3085,7 +3168,7 @@ $('#stat-oxygen').ariaClick({ label : 'Oxygen tanks.' }, function () {
     Dialog.wiki(Story.get('about-oxygen').text);
     Dialog.open();
 });
-/* twine-user-script #19: "npcs.js" */
+/* twine-user-script #20: "npcs.js" */
 // npcs.js: a class system to quickly generate new NPCs
 // bare-bones
 State.variables.npcs = {};
@@ -3304,7 +3387,7 @@ Character.prototype = {
     clone : function () { return new Character(this.name, this.role, this.description, this.talk, this.loyalty); }
     
 };
-/* twine-user-script #20: "overlay.js" */
+/* twine-user-script #21: "overlay.js" */
 // overlay.js
 
 // create the overlay and a localized reference
@@ -3404,7 +3487,7 @@ window.overlay = window.overlay || {
         }
     }
 };
-/* twine-user-script #21: "scenes.js" */
+/* twine-user-script #22: "scenes.js" */
 // scenes.js: event scenes for the even playlist...
 State.variables.playlist = [];
 setup.scenes = [
@@ -3618,7 +3701,7 @@ $(document).on(':play-dive-scene', function () {
     var sv = State.variables;
     sv.tanks = Math.clamp(sv.tanks - Math.ceil(100 / sv.scenesPerDive), 0, 100);
 });
-/* twine-user-script #22: "settings.js" */
+/* twine-user-script #23: "settings.js" */
 function themeHandler () {
     var $html = $(document.documentElement);
     $html.removeClass('light');
@@ -3708,10 +3791,10 @@ Setting.addToggle('ambience', {
     default  : true,
     onChange : ambienceSwitch
 });
-/* twine-user-script #23: "shake-macro-set.min.js" */
+/* twine-user-script #24: "shake-macro-set.min.js" */
 /*! <<shake>> macro set for SugarCube 2.x */
 !function(){"use strict";if("undefined"==typeof version||"undefined"==typeof version.title||"SugarCube"!==version.title||"undefined"==typeof version.major||version.major<2||"undefined"==typeof version.minor||version.minor<5)throw new Error("<<shake>> macro requires SugarCube 2.5.0 or greater, aborting load");Macro.add("shake",{tags:null,handler:function(){var duration=this.args.length>0?this.args[0]:1/0,shakeClass="shake";if(1/0!==duration)try{duration=Math.max(Engine.minDomActionDelay,Util.fromCssTime(duration))}catch(e){return this.error(e.message)}Config.debug&&this.debugView.modes({block:!0});var $wrapper=jQuery(document.createElement("span"));$wrapper.addClass("macro-"+this.name+" "+shakeClass).wiki(this.payload[0].contents).appendTo(this.output),1/0!==duration&&setTimeout(function(){$wrapper.removeClass(shakeClass)},Engine.minDomActionDelay+duration)}}),Macro.add(["shakescreen","shaketarget"],{handler:function(){var $targets,duration,shakeClass;if("shakescreen"===this.name)$targets=jQuery("#passages"),duration=this.args.length>0?this.args[0]:1/0,shakeClass="shake-block";else{if(0===this.args.length)return this.error("no selector specified");if($targets=jQuery(this.args[0]),0===$targets.length)return this.error('no elements matched the selector "'+this.args[0]+'"');duration=this.args.length>1?this.args[1]:1/0,shakeClass="block"===jQuery($targets[0]).css("display")?"shake-block":"shake"}if("stop"===duration)return void $targets.removeClass(shakeClass);if(1/0!==duration)try{duration=Math.max(Engine.minDomActionDelay,Util.fromCssTime(duration))}catch(e){return this.error(e.message)}$targets.addClass(shakeClass),1/0!==duration&&setTimeout(function(){$targets.removeClass(shakeClass)},Engine.minDomActionDelay+duration)}})}();
-/* twine-user-script #24: "upgrades.js" */
+/* twine-user-script #25: "upgrades.js" */
 // upgrades.js
 setup.upgrades = {};
 State.variables.upgradeStore = new Inventory();
@@ -3928,7 +4011,7 @@ $(document).on(':no-money-upgrade', function (e) {
     
     (Config.debug) && console.log('CANNOT BUY UPGRADE: Upgrade ' + e.item + ' for -> ' + e.cost + '; current gold -> ' + State.variables.points);
 });
-/* twine-user-script #25: "volume.js" */
+/* twine-user-script #26: "volume.js" */
 // volume slider, by chapel; for sugarcube 2
 // version 1.0
 
@@ -3993,7 +4076,7 @@ Macro.add('volume', {
 			.appendTo(this.output);
 	}
 });
-/* twine-user-script #26: "z-bubbles.js" */
+/* twine-user-script #27: "z-bubbles.js" */
 window.bubbles = window.bubbles || {
     animate : function () {
         var canvas = document.getElementById('bgCanvas');
@@ -4081,7 +4164,7 @@ $(document).on(':start-dive', function () {
         bubbles.animation();
     }
 });
-/* twine-user-script #27: "z-macros.js" */
+/* twine-user-script #28: "z-macros.js" */
     /* drop and treasure system macros */
 
 // `<<treasure itemName rarityTier>>Description of item...<</treasure>>` (goes in StoryInit...)
@@ -4443,11 +4526,11 @@ Macro.add('toggleoverlay', {
     }
 });
     /* end overlay macros */
-/* twine-user-script #28: "z-throughline.js" */
+/* twine-user-script #29: "z-throughline.js" */
 // throughline.js
 State.variables.throughLine = {
     dives : 0,
-    stage : 0
+    stage : 1
 };
 
 var gateways = [ // the gateway events
@@ -4475,7 +4558,7 @@ setup.gateWayTest = function () {
         if (roll < odds && odds > 21) {
             return gateways[2];
         }
-    } else if (line.stage === 10) {
+    } else if (line.stage === 30) {
         if (roll < Math.trunc(odds / 2)) {
             return gateways[3];
         }
@@ -4798,6 +4881,9 @@ $(document).on(&#39;:start-dive&#39;, function () {
 /% just before the game starts: %/
 &lt;&lt;soundtrack&gt;&gt;
 &lt;&lt;loot 0&gt;&gt;
+
+/% debugging aids %/
+&lt;&lt;run setup.build.log()&gt;&gt;
 
 /% dismiss the load screen %/
 &lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;</tw-passagedata><tw-passagedata pid="38" name="npcs-init" tags="init" position="975,475">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
