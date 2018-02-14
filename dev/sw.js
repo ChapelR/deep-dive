@@ -111,12 +111,8 @@ function cacheIcons () {
     return icnList;
 } 
 
-function cacheManifest () {
-    return ['/app/manifest.json'];
-}
-
 function createCacheArray () {
-    return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons(), cacheManifest());
+    return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons());
 }
 
 var CACHE_NAME = 'deep-dive-cache',
