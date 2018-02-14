@@ -125,7 +125,7 @@ self.addEventListener( 'install', function (e) {
     
     e.waitUntil(onInstall(e))
 });
-
+/*
 self.addEventListener('fetch', function (e) {
     
     function shouldHandle (ev, opts) {
@@ -163,3 +163,4 @@ self.addEventListener('fetch', function (e) {
     }
     
 });
+*/
