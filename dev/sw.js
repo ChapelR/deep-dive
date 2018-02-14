@@ -9,8 +9,7 @@ function cacheFonts () {
             'rob-m.ttf'
         ];
     fontList = fontList.map( function (font) { return mainDir + fontDir + font; });
-    //return fontList;
-    return [];
+    return fontList;
 }
 
 function cacheImages () {
@@ -94,7 +93,7 @@ function cacheAudio () {
         'untitled.ogg' 
     ];
     musicList = musicList.map( function (song) { return mainDir + musicDir + song; });
-    return musicList.concat(effectList);
+    return musicList;
 }
 
 function cacheIcons () {
@@ -113,27 +112,33 @@ function cacheIcons () {
 } 
 
 function createCacheArray () {
-    return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons(), ['index.html', '.']);
+    return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons());
 }
 
 var CACHE_NAME = 'deep-dive-cache',
     urlsToCache = createCacheArray();
 
 self.addEventListener('install', function(event) {
-// Perform install steps
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-        .then(function(cache) {
-            console.log(urlsToCache);
-            return cache.addAll(urlsToCache);
-        })
-    );
+  // Perform install steps
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        // console.log(urlsToCache);
+        return cache.addAll(urlsToCache);
+      })
+  );
 });
 
 self.addEventListener('fetch', function(event) {
-    event.respondWith(
-        caches.match(event.request).then(function(response) {
-            return response || fetch(event.request);
-        })
-    );
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+        return fetch(event.request, { mode : 'no-cors' });
+      }
+    )
+  );
 });
