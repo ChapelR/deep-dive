@@ -124,6 +124,7 @@ var CACHE_NAME = 'deep-dive-cache',
 self.addEventListener('install', function(event) {
   // Perform install steps
   event.waitUntil(
+  console.log(urlsToCache);
     caches.open(CACHE_NAME)
       .then(function(cache) {
         console.log('Opened cache');
