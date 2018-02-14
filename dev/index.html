@@ -4081,7 +4081,7 @@ Macro.add('volume', {
 var id = LoadScreen.lock();
 if ('serviceWorker' in navigator && setup.build.web) {
     try {
-        navigator.serviceWorker.register('/sw.js', { scope : '/' });
+        navigator.serviceWorker.register('sw.js');
     } catch (e) {}
 }
 LoadScreen.unlock(id);
