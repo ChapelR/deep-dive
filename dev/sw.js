@@ -115,30 +115,51 @@ function createCacheArray () {
     return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons());
 }
 
-var CACHE_NAME = 'deep-dive-cache',
-    urlsToCache = createCacheArray();
-
-self.addEventListener('install', function(event) {
-  // Perform install steps
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        // console.log(urlsToCache);
-        return cache.addAll(urlsToCache);
-      })
-  );
+self.addEventListener( 'install', function (e) {
+    
+    function onInstall () {
+        return caches.open('static').then(function (cache) {
+            cache.addAll(createCacheArray());
+        });
+    }
+    
+    event.waitUntil(onInstall(e))
 });
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request, { mode : 'no-cors' });
-      }
-    )
-  );
+self.addEventListener('fetch', function (e) {
+    
+    function shouldHandle (ev, opts) {
+        var req = ev.request,
+            url = new URL(req.url),
+            criteria = {
+                isGETRequest       : req.method === 'GET',
+                fromOrigin         : url.origin === self.location.origin
+            };
+        var failing = Object.keys(criteria).filter( function (key) {
+            return !criteria[key];
+        });
+        
+        return !failing.length;
+    }
+    
+    function onFetch (ev, opts) {
+        
+        ev.respondWith(fetch(request).then(function (response) {
+            caches.match(ev.request).then(function (response) { 
+                if (!response) {
+                    throw new Error('not cached');
+                }
+                return response;
+            }).catch( function (err) {
+                return response;
+            }).catch( function (err) {
+                console.error('could not find resource');
+            });
+        }));
+    }
+    
+    if (shouldHandle(e)) {
+        onFetch(e);
+    }
+    
 });
