@@ -119,11 +119,12 @@ var CACHE_NAME = 'deep-dive-cache',
     urlsToCache = createCacheArray();
 
 self.addEventListener('install', function(event) {
-  // Perform install steps
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        return cache.addAll(urlsToCache);
-      })
-  );
+// Perform install steps
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+        .then(function(cache) {
+            console.log(urlsToCache);
+            return cache.addAll(urlsToCache);
+        })
+    );
 });
