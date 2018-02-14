@@ -9,7 +9,7 @@ function cacheFonts () {
             'rob-m.ttf'
         ];
     fontList = fontList.map( function (font) { return mainDir + fontDir + font; });
-    return fontList;
+    return [];
 }
 
 function cacheImages () {
