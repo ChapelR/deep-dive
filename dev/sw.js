@@ -123,7 +123,7 @@ self.addEventListener( 'install', function (e) {
         });
     }
     
-    event.waitUntil(onInstall(e))
+    e.waitUntil(onInstall(e))
 });
 
 self.addEventListener('fetch', function (e) {
