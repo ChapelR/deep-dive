@@ -8,7 +8,7 @@ function cacheFonts () {
             'rod.ttf', 
             'rob-m.ttf'
         ];
-    fontList.map( function (font) { return mainDir + fontDir + font });
+    fontList.map( function (font) { return mainDir + fontDir + font; });
 }
 
 function cacheImages () {
@@ -33,7 +33,7 @@ function cacheImages () {
             'hub/sell.svg', 
             'hub/workers.svg' 
         ];
-    imgList.map( function (img) { return mainDir + imgDir + img });
+    imgList.map( function (img) { return mainDir + imgDir + img; });
     return imgList;
 }
 
@@ -71,7 +71,7 @@ function cacheAudio () {
             'links/switch.mp3', 
             'links/switch.ogg' 
         ];
-    effectList.map( function (effect) { return mainDir + effectsDir + effect });
+    effectList.map( function (effect) { return mainDir + effectsDir + effect; });
     
     // cache music
     var musicDir = ['audio/music/'],
@@ -91,7 +91,7 @@ function cacheAudio () {
         'untitled.mp3', 
         'untitled.ogg' 
     ];
-    musicList.map( function (song) { return mainDir + musicDir + song });
+    musicList.map( function (song) { return mainDir + musicDir + song; });
 }
 
 function cacheIcons () {
@@ -105,15 +105,15 @@ function cacheIcons () {
             'home168.png', 
             'home192.png' 
         ];
-    icnList.map( function (icon) { return icnDir + icon });
-    return imgList;
+    icnList.map( function (icon) { return icnDir + icon; });
+    return icnList;
 } 
 
 function cacheManifest () {
     return ['/app/manifest.json'];
 }
 
-function createCacheArray {
+function createCacheArray () {
     return cacheFonts().concat(cacheImages(), cacheAudio(), cacheIcons(), cacheManifest());
 }
 
