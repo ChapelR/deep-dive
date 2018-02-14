@@ -123,7 +123,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
-        // console.log(urlsToCache);
+        console.log(urlsToCache);
         return cache.addAll(urlsToCache);
       })
   );
