@@ -8,7 +8,7 @@ function cacheFonts () {
             'rod.ttf', 
             'rob-m.ttf'
         ];
-    fontList.map( function (font) { return mainDir + fontDir + font; });
+    fontList = fontList.map( function (font) { return mainDir + fontDir + font; });
     return fontList;
 }
 
@@ -34,7 +34,7 @@ function cacheImages () {
             'hub/sell.svg', 
             'hub/workers.svg' 
         ];
-    imgList.map( function (img) { return mainDir + imgDir + img; });
+    imgList = imgList.map( function (img) { return mainDir + imgDir + img; });
     return imgList;
 }
 
@@ -72,7 +72,7 @@ function cacheAudio () {
             'links/switch.mp3', 
             'links/switch.ogg' 
         ];
-    effectList.map( function (effect) { return mainDir + effectsDir + effect; });
+    effectList = effectList.map( function (effect) { return mainDir + effectsDir + effect; });
     
     // cache music
     var musicDir = ['audio/music/'],
@@ -92,7 +92,8 @@ function cacheAudio () {
         'untitled.mp3', 
         'untitled.ogg' 
     ];
-    musicList.map( function (song) { return mainDir + musicDir + song; });
+    musicList = musicList.map( function (song) { return mainDir + musicDir + song; });
+    return musicList;
 }
 
 function cacheIcons () {
@@ -106,7 +107,7 @@ function cacheIcons () {
             'home168.png', 
             'home192.png' 
         ];
-    icnList.map( function (icon) { return icnDir + icon; });
+    icnList = icnList.map( function (icon) { return icnDir + icon; });
     return icnList;
 } 
 
