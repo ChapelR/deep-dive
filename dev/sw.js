@@ -3,7 +3,7 @@ self.addEventListener( 'install', function (e) {
     
     function onInstall () {
         return caches.open('static').then(function (cache) {
-            cache.addAll(['/index.html', '.', '/']);
+            cache.add('index.html');
         });
     }
     
