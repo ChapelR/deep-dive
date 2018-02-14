@@ -125,7 +125,7 @@ self.addEventListener('install', function(event) {
       .then(function(cache) {
         // console.log(urlsToCache);
         return cache.addAll(urlsToCache);
-      }).catch( function (err) {} );
+      }).catch( function (err) {} )
   );
 });
 
