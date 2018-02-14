@@ -4078,7 +4078,7 @@ Macro.add('volume', {
 });
 /* twine-user-script #27: "workers.js" */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/app/sw.js', { scope : './' }).then(function(reg) {
+  navigator.serviceWorker.register('sw.js', { scope : './' }).then(function(reg) {
     console.log('Yey!', reg);
   }).catch(function(err) {
     console.log('Boo!', err);
