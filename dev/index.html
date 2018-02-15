@@ -920,7 +920,7 @@ Macro.get('bugreport').fence = ['```', '```'];
 setup.build = {
     verNo   : 50,
     version : '0.5.0',
-    mobile  : $(window).width <= 800,
+    mobile  : $(window).width() <= 800,
     web     : (typeof window.nw === 'undefined'),
     debug   : false,
     workers : false,
@@ -3144,32 +3144,86 @@ $('#ui-loot').ariaClick({ label : 'Inventory.' }, function () {
 });
 
 /* bumper */
-$('#stat-gold .stat-icon').hover(function () {
-    $('#bumper-body').empty().wiki(Story.get('gold-view').text);
-    $('#bumper').stop().fadeIn();
-}, function () {
-    $('#bumper').stop().fadeOut();
-});
-$('#stat-oxygen .stat-icon').hover(function () {
-    $('#bumper-body').empty().wiki(Story.get('tanks-view').text);
-    $('#bumper').stop().fadeIn();
-}, function () {
-    $('#bumper').stop().fadeOut();
-});
+setup.restoreBumperHandlers = function () {
+    $('#stat-gold, #stat-oxygen, .stat-icon').off();
+    $('#stat-gold .stat-icon').hover(function () {
+        $('#bumper-body').empty().wiki(Story.get('gold-view').text);
+        $('#bumper').stop().fadeIn();
+    }, function () {
+        $('#bumper').stop().fadeOut();
+    });
+    $('#stat-oxygen .stat-icon').hover(function () {
+        $('#bumper-body').empty().wiki(Story.get('tanks-view').text);
+        $('#bumper').stop().fadeIn();
+    }, function () {
+        $('#bumper').stop().fadeOut();
+    });
 
-$('#stat-gold').ariaClick({ label : 'Gold.' }, function () {
-    accessMenu();
-    Dialog.setup('About Gold', 'dialog-help gold-help');
-    Dialog.wiki(Story.get('about-gold').text);
-    Dialog.open();
-});
-$('#stat-oxygen').ariaClick({ label : 'Oxygen tanks.' }, function () {
-    accessMenu();
-    Dialog.setup('About Oxygen', 'dialog-help oxygen-help');
-    Dialog.wiki(Story.get('about-oxygen').text);
-    Dialog.open();
-});
-/* twine-user-script #20: "npcs.js" */
+    $('#stat-gold').ariaClick({ label : 'Gold.' }, function () {
+        accessMenu();
+        Dialog.setup('About Gold', 'dialog-help gold-help');
+        Dialog.wiki(Story.get('about-gold').text);
+        Dialog.open();
+    });
+    $('#stat-oxygen').ariaClick({ label : 'Oxygen tanks.' }, function () {
+        accessMenu();
+        Dialog.setup('About Oxygen', 'dialog-help oxygen-help');
+        Dialog.wiki(Story.get('about-oxygen').text);
+        Dialog.open();
+    });
+}
+/* twine-user-script #20: "mobile-mode.js" */
+// mobile-mode.js
+var mobile = setup.build.mobile; // ref to mobile mode
+
+function mobileBumperHandlers () {
+    // remove default event handlers
+    $('#stat-gold, #stat-oxygen, .stat-icon').off();
+    // set up mobile handlers (render all content in one dialog)
+    $('#stat-gold').ariaClick({ label : 'Gold.' }, function () {
+        var str = ('<center>' + Story.get('gold-view').text + '</center><br /><br />' + Story.get('about-gold').text);
+        accessMenu();
+        Dialog.setup('Gold', 'dialog-help gold-help');
+        Dialog.wiki(str);
+        Dialog.open();
+    });
+    $('#stat-oxygen').ariaClick({ label : 'Oxygen tanks.' }, function () {
+        var str = ('<center>' + Story.get('tanks-view').text + '</center><br /><br />' + Story.get('about-oxygen').text);
+        accessMenu();
+        Dialog.setup('About Oxygen', 'dialog-help oxygen-help');
+        Dialog.wiki(str);
+        Dialog.open();
+    });
+}
+
+function mobileModeSwitch () {
+    // switch to/from mobile mode
+    if (settings.mobile) {
+        mobileBumperHandlers(); // setup mobile handlers
+    } else {
+        setup.restoreBumperHandlers(); // default interface handlers
+    }
+} 
+
+function askAboutMobile () {
+    if (mobile && !settings.mobile) { 
+        var check = confirm('Are you sure you want to disable mobile mode?');
+        if (!check) {
+            settings.mobile = true;
+            $('#setting-control-mobile').empty().wiki('On').addClass('enabled');
+        }
+    }
+    mobileModeSwitch();
+}
+
+// "export" the functions
+setup.mobileMode = {
+    handlers  : mobileBumperHandlers,
+    toggle    : mobileModeSwitch,
+    askFirst  : askAboutMobile
+};
+
+/* twine-user-script #21: "npcs.js" */
 // npcs.js: a class system to quickly generate new NPCs
 // bare-bones
 State.variables.npcs = {};
@@ -3388,7 +3442,7 @@ Character.prototype = {
     clone : function () { return new Character(this.name, this.role, this.description, this.talk, this.loyalty); }
     
 };
-/* twine-user-script #21: "overlay.js" */
+/* twine-user-script #22: "overlay.js" */
 // overlay.js
 
 // create the overlay and a localized reference
@@ -3488,7 +3542,7 @@ window.overlay = window.overlay || {
         }
     }
 };
-/* twine-user-script #22: "scenes.js" */
+/* twine-user-script #23: "scenes.js" */
 // scenes.js: event scenes for the even playlist...
 State.variables.playlist = [];
 setup.scenes = [
@@ -3702,7 +3756,11 @@ $(document).on(':play-dive-scene', function () {
     var sv = State.variables;
     sv.tanks = Math.clamp(sv.tanks - Math.ceil(100 / sv.scenesPerDive), 0, 100);
 });
-/* twine-user-script #23: "settings.js" */
+/* twine-user-script #24: "settings.js" */
+/* appearance */
+
+// mobile mode... see mobile-mode.js
+
 function themeHandler () {
     var $html = $(document.documentElement);
     $html.removeClass('light');
@@ -3714,16 +3772,20 @@ function themeHandler () {
 function fontInit () {
     var $html = $(document.documentElement);
     $html.removeClass('small large very-large');
-    if (settings.fonts !== 'Normal') {
+    if (settings.fonts !== 'Medium') {
         $html.addClass(Util.slugify(settings.fonts));
     }
 }
 
 function fontHandler () {
     fontInit();
-    Dialog.close();
-    UI.settings();
+    if (Dialog.isOpen()) {
+        Dialog.close();
+        UI.settings();
+    }
 }
+
+/* audio */
 
 function muteHandler () {
     SimpleAudio.mute = !settings.mute;
@@ -3745,7 +3807,16 @@ function ambienceSwitch () {
     soundSwitch('ambience');
 }
 
+/* setting definitions */
+
 Setting.addHeader('Appearance', "Change the game's appearance for a better reading experience.")
+
+Setting.addToggle('mobile', {
+    label    : 'Mobile mode:',
+    default  : setup.build.mobile,
+    onInit   : setup.mobileMode.toggle,
+    onChange : setup.mobileMode.askFirst
+});
 
 Setting.addToggle('theme', {
     label    : 'Night mode:',
@@ -3755,8 +3826,8 @@ Setting.addToggle('theme', {
 
 Setting.addList('fonts', {
     label    : 'Font size:',
-    list     : ['Small', 'Normal', 'Large', 'Very Large'],
-    default  : 'Normal',
+    list     : ['Small', 'Medium', 'Large', 'Very Large'],
+    default  : (setup.build.mobile) ? 'Large' : 'Medium',
     onInit   : fontInit,
     onChange : fontHandler
 });
@@ -3767,7 +3838,7 @@ Setting.addToggle('animation', {
 
 Setting.addHeader('Sound', 'Choose which sounds to mute or adjust the volume.');
 
-// volume slider...
+// volume slider... see volume.js
 
 Setting.addToggle('mute', {
     label    : 'All:',
@@ -3792,10 +3863,10 @@ Setting.addToggle('ambience', {
     default  : true,
     onChange : ambienceSwitch
 });
-/* twine-user-script #24: "shake-macro-set.min.js" */
+/* twine-user-script #25: "shake-macro-set.min.js" */
 /*! <<shake>> macro set for SugarCube 2.x */
 !function(){"use strict";if("undefined"==typeof version||"undefined"==typeof version.title||"SugarCube"!==version.title||"undefined"==typeof version.major||version.major<2||"undefined"==typeof version.minor||version.minor<5)throw new Error("<<shake>> macro requires SugarCube 2.5.0 or greater, aborting load");Macro.add("shake",{tags:null,handler:function(){var duration=this.args.length>0?this.args[0]:1/0,shakeClass="shake";if(1/0!==duration)try{duration=Math.max(Engine.minDomActionDelay,Util.fromCssTime(duration))}catch(e){return this.error(e.message)}Config.debug&&this.debugView.modes({block:!0});var $wrapper=jQuery(document.createElement("span"));$wrapper.addClass("macro-"+this.name+" "+shakeClass).wiki(this.payload[0].contents).appendTo(this.output),1/0!==duration&&setTimeout(function(){$wrapper.removeClass(shakeClass)},Engine.minDomActionDelay+duration)}}),Macro.add(["shakescreen","shaketarget"],{handler:function(){var $targets,duration,shakeClass;if("shakescreen"===this.name)$targets=jQuery("#passages"),duration=this.args.length>0?this.args[0]:1/0,shakeClass="shake-block";else{if(0===this.args.length)return this.error("no selector specified");if($targets=jQuery(this.args[0]),0===$targets.length)return this.error('no elements matched the selector "'+this.args[0]+'"');duration=this.args.length>1?this.args[1]:1/0,shakeClass="block"===jQuery($targets[0]).css("display")?"shake-block":"shake"}if("stop"===duration)return void $targets.removeClass(shakeClass);if(1/0!==duration)try{duration=Math.max(Engine.minDomActionDelay,Util.fromCssTime(duration))}catch(e){return this.error(e.message)}$targets.addClass(shakeClass),1/0!==duration&&setTimeout(function(){$targets.removeClass(shakeClass)},Engine.minDomActionDelay+duration)}})}();
-/* twine-user-script #25: "upgrades.js" */
+/* twine-user-script #26: "upgrades.js" */
 // upgrades.js
 setup.upgrades = {};
 State.variables.upgradeStore = new Inventory();
@@ -4012,7 +4083,7 @@ $(document).on(':no-money-upgrade', function (e) {
     
     (Config.debug) && console.log('CANNOT BUY UPGRADE: Upgrade ' + e.item + ' for -> ' + e.cost + '; current gold -> ' + State.variables.points);
 });
-/* twine-user-script #26: "volume.js" */
+/* twine-user-script #27: "volume.js" */
 // volume slider, by chapel; for sugarcube 2
 // version 1.0
 
@@ -4021,16 +4092,16 @@ setup.vol = {};
 
 // options object
 setup.vol.options = {
-	current  : 10,
-	rangeMax : 10,
+	current  : 50,
+	rangeMax : 100,
 	step     : 1
 };
 
-setup.vol.last = setup.vol.options.current;
+setup.vol.last = storage.get('volume') || setup.vol.options.current;
 setup.vol.start = setup.vol.last / setup.vol.options.rangeMax;
 
 postdisplay['volume-task'] = function (taskName) {
-	delete postdisplay[taskName];
+    delete postdisplay[taskName];
 	SimpleAudio.volume = setup.vol.start;
 }
 
@@ -4045,6 +4116,7 @@ postdisplay['volume-task'] = function (taskName) {
 		// change volume; set slider position
 		SimpleAudio.volume = volRef.current;
 		setup.vol.last = change;
+        storage.set('volume', change);
 	});
 }();
 
@@ -4077,7 +4149,7 @@ Macro.add('volume', {
 			.appendTo(this.output);
 	}
 });
-/* twine-user-script #27: "workers.js" */
+/* twine-user-script #28: "workers.js" */
 var id = LoadScreen.lock();
 if ('serviceWorker' in navigator && setup.build.web) {
     try {
@@ -4085,7 +4157,7 @@ if ('serviceWorker' in navigator && setup.build.web) {
     } catch (e) {}
 }
 LoadScreen.unlock(id);
-/* twine-user-script #28: "z-bubbles.js" */
+/* twine-user-script #29: "z-bubbles.js" */
 window.bubbles = window.bubbles || {
     animate : function () {
         var canvas = document.getElementById('bgCanvas');
@@ -4173,7 +4245,7 @@ $(document).on(':start-dive', function () {
         bubbles.animation();
     }
 });
-/* twine-user-script #29: "z-macros.js" */
+/* twine-user-script #30: "z-macros.js" */
     /* drop and treasure system macros */
 
 // `<<treasure itemName rarityTier>>Description of item...<</treasure>>` (goes in StoryInit...)
@@ -4535,7 +4607,7 @@ Macro.add('toggleoverlay', {
     }
 });
     /* end overlay macros */
-/* twine-user-script #30: "z-throughline.js" */
+/* twine-user-script #31: "z-throughline.js" */
 // throughline.js
 State.variables.throughLine = {
     dives : 0,
@@ -4895,7 +4967,10 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;run setup.build.log()&gt;&gt;
 
 /% dismiss the load screen %/
-&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;</tw-passagedata><tw-passagedata pid="38" name="npcs-init" tags="init" position="975,475">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
+&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;
+
+/% mobile mode 
+&lt;&lt;run setup.mobileMode.init()&gt;&gt;%/</tw-passagedata><tw-passagedata pid="38" name="npcs-init" tags="init" position="975,475">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
 &lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="39" name="vendor-Kim" tags="shop" position="1100,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Loot Vendor&lt;/span&gt;&lt;/span&gt;
 
 Kim: &quot;What have you got for me, diver?&quot;
