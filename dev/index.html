@@ -2,7 +2,7 @@
 <html data-init="no-js">
 <head><link rel="manifest" href="app/manifest.json" />
 <script>
-if ('serviceWorker' in navigator && setup.build.web) {
+if ('serviceWorker' in navigator) {
     try {
         if (navigator.serviceWorker.controller) {
             // console.log('[Service Workers already registered].');
