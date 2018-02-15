@@ -1,7 +1,7 @@
 {
     "name": "Deep Dive",
     "short_name": "DeepDive",
-    "start_url" : "/deep-dive/dev/index.html",
+    "start_url" : "https://chapelr.github.io/deep-dive/dev/index.html",
     "scope": "/deep-dive/dev/",
     "display": "standalone",
     "orientation": "portrait",
@@ -33,5 +33,6 @@
         "sizes": "192x192",
         "type": "image/png"
     }],
-    "theme_color": "#555"
+    "theme_color": "#555",
+    "related_applications": []
 }
