@@ -1,6 +1,8 @@
 var CACHE = 'deep-dive-precache';
 var precacheFiles = [
+        // main app
         'index.html',
+        // menu and ui icons
         'assets/images/icons/about.svg',
         'assets/images/icons/cash.svg',
         'assets/images/icons/data.svg',
@@ -17,9 +19,11 @@ var precacheFiles = [
         'assets/images/icons/hub/protectors.svg',
         'assets/images/icons/hub/sell.svg',
         'assets/images/icons/hub/workers.svg',
+        // fonts 
         'assets/fonts/base.ttf',
         'assets/fonts/rob.ttf',
         'assets/fonts/rob-m.ttf',
+        // effects
         'assets/audio/effects/dive.mp3',
         'assets/audio/effects/underwater1.mp3',
         'assets/audio/effects/underwater2.mp3',
@@ -36,20 +40,49 @@ var precacheFiles = [
         'assets/audio/effects/links/page.mp3',
         'assets/audio/effects/links/steps.mp3',
         'assets/audio/effects/links/switch.mp3',
+        // music
         'assets/audio/music/51oh.mp3',
         'assets/audio/music/cibelle.mp3',
         'assets/audio/music/cidade-sol.mp3',
         'assets/audio/music/milan.mp3',
         'assets/audio/music/que-pena.mp3',
         'assets/audio/music/raindrops.mp3',
-        'assets/audio/music/untitled.mp3'
+        'assets/audio/music/untitled.mp3',
+        // voice lines 
+        'assets/audio/voice/jack-hi1.mp3',
+        'assets/audio/voice/jack-hi2.mp3',
+        'assets/audio/voice/jack-hi3.mp3',
+        'assets/audio/voice/jack-nice1.mp3',
+        'assets/audio/voice/jack-nice2.mp3',
+        'assets/audio/voice/jack-ok1.mp3',
+        'assets/audio/voice/jack-ok2.mp3',
+        'assets/audio/voice/jack-yes1.mp3',
+        'assets/audio/voice/jack-yes2.mp3',
+        'assets/audio/voice/kim-crazy1.mp3',
+        'assets/audio/voice/kim-crazy2.mp3',
+        'assets/audio/voice/kim-crazy3.mp3',
+        'assets/audio/voice/kim-else1.mp3',
+        'assets/audio/voice/kim-else2.mp3',
+        'assets/audio/voice/kim-else3.mp3',
+        'assets/audio/voice/kim-hi1.mp3',
+        'assets/audio/voice/kim-hi2.mp3',
+        'assets/audio/voice/kim-hope1.mp3',
+        'assets/audio/voice/kim-hope2.mp3',
+        'assets/audio/voice/kim-ok1.mp3',
+        'assets/audio/voice/kim-ok2.mp3',
+        'assets/audio/voice/kim-ok3.mp3',
+        'assets/audio/voice/kim-sup1.mp3',
+        'assets/audio/voice/kim-sup2.mp3',
+        'assets/audio/voice/kim-sup3.mp3',
+        'assets/audio/voice/kim-thatit1.mp3',
+        'assets/audio/voice/kim-thatit2.mp3',
     ];
 
 //Install stage sets up the cache-array to configure pre-cache content
 self.addEventListener('install', function(evt) {
-    console.log('The service worker is being installed.');
+    // console.log('The service worker is being installed.');
     evt.waitUntil(precache().then(function() {
-        console.log('[ServiceWorker] Skip waiting on install');
+        // console.log('[ServiceWorker] Skip waiting on install');
         return self.skipWaiting();
     })
     );
@@ -58,13 +91,13 @@ self.addEventListener('install', function(evt) {
 
 //allow sw to control of current page
 self.addEventListener('activate', function(event) {
-    console.log('[ServiceWorker] Claiming clients for current page');
+    // console.log('[ServiceWorker] Claiming clients for current page');
     return self.clients.claim();
 
 });
 
 self.addEventListener('fetch', function(evt) {
-    console.log('The service worker is serving the asset.'+ evt.request.url);
+    // console.log('The service worker is serving the asset.'+ evt.request.url);
     evt.respondWith(fromCache(evt.request).catch(fromServer(evt.request)));
     evt.waitUntil(update(evt.request));
 });
