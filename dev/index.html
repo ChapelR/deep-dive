@@ -225,6 +225,13 @@ input[type=range]:focus::-ms-fill-upper {
   background: #0a0a0a;
 }
 /* twine-user-stylesheet #6: "styles.css" */
+/* patch for mobile browsers */
+
+html {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-tap-highlight-color: transparent;
+}
+
 /*fonts*/
 
 @font-face {
@@ -933,7 +940,8 @@ setup.build = {
 
 // web app manifest 
 if (setup.build.web) {
-    $(document.head).append('<link rel="manifest" href="app/manifest.json" />');
+    $(document.head).append('<meta name="theme-color" content="#555" />'); // mobile browser toolbar
+    $(document.head).append('<link rel="manifest" href="app/manifest.json" />'); // web app manifest
 }
 
 // icon
@@ -2925,7 +2933,7 @@ setup.preloader = {
     imgs  : sourceList
 };
 
-(function () {
+(function () { // ensure images are ready before playing
     var ID = LoadScreen.lock()
     preload(sourceList);
     LoadScreen.unlock(ID);
@@ -3086,19 +3094,18 @@ $(document).on(':dialogopen', function () {
                 .attr('id', 'setting-volume')
                 .wiki('<br /> Volume: <<volume>>');
             $setting.after($wrapper);
-            console.log('worked')
         }
     }, Engine.minDomActionDelay);
     
 });
 
-/* access menu event */
-function accessMenu () {
+/* access menu sounds */
+function accessMenu () { // menu triggered passage nav
     $.wiki('<<audio "page" play>>');
     $(document).trigger(':access-menu');
 }
 
-function accessMenuAlt () {
+function accessMenuAlt () { // menu triggered modal
     $.wiki('<<audio "cocking" play>>');
     $(document).trigger(':access-menu');
 }
@@ -3205,7 +3212,7 @@ function mobileModeSwitch () {
     }
 } 
 
-function askAboutMobile () {
+function askAboutMobile () { // ask the user before changing the event handlers
     if (mobile && !settings.mobile) { 
         var check = confirm('Are you sure you want to disable mobile mode?');
         if (!check) {
@@ -4087,6 +4094,8 @@ $(document).on(':no-money-upgrade', function (e) {
 // volume slider, by chapel; for sugarcube 2
 // version 1.0
 
+/* this needs cleaning up */
+
 // create namespace
 setup.vol = {};
 
@@ -4116,7 +4125,7 @@ postdisplay['volume-task'] = function (taskName) {
 		// change volume; set slider position
 		SimpleAudio.volume = volRef.current;
 		setup.vol.last = change;
-        storage.set('volume', change);
+        storage.set('volume', change); // use storage to save setting
 	});
 }();
 
@@ -4960,11 +4969,11 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;include &#39;audio-init&#39;&gt;&gt;
 
 /% just before the game starts: %/
-&lt;&lt;soundtrack&gt;&gt;
-&lt;&lt;loot 0&gt;&gt;
+&lt;&lt;soundtrack&gt;&gt; /% move to splash screen start link to work around mobiles %/
 
 /% debugging aids %/
 &lt;&lt;run setup.build.log()&gt;&gt;
+&lt;&lt;loot 0&gt;&gt;
 
 /% dismiss the load screen %/
 &lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;
