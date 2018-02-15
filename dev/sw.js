@@ -2,6 +2,7 @@ var CACHE = 'deep-dive-precache';
 var precacheFiles = [
         // main app
         'index.html',
+        'maifest.json',
         // menu and ui icons
         'assets/images/icons/about.svg',
         'assets/images/icons/cash.svg',
