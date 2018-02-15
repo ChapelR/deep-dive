@@ -1,7 +1,7 @@
 var CACHE = 'deep-dive-precache';
 var precacheFiles = [
         // main app
-        '/'
+        './',
         'index.html',
         // menu and ui icons
         'assets/images/icons/about.svg',
