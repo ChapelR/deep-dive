@@ -1,8 +1,8 @@
 {
     "name": "Deep Dive",
     "short_name": "DeepDive",
-    "start_url" : "../index.html",
-    "scope": "..",
+    "start_url" : "/deep-dive/dev/index.html",
+    "scope": "/deep-dive/dev/",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#111",
