@@ -475,6 +475,7 @@ a.link-external:after {
 
 #main-hub table {
     margin: auto;
+    margin-bottom: 1em;
 }
 
 #main-hub td {
@@ -539,9 +540,19 @@ a.link-external:after {
     border-style: inset;
 }
 
-#space-link button  {
+.big-link button, button.npc-action-link {
     width: 60%;
-    margin: 1.5em;
+    margin: 0.5em;
+}
+
+html.light #story #return-link button,  #story #return-link button{
+    background-color: #c00;
+    border-color: #111;
+}
+
+html.light #story #return-link button:hover,  #story #return-link button:hover {
+    background-color: #c33;
+    border-color: #eee;
 }
 
 #setting-volume #volume-control {
@@ -649,6 +660,10 @@ html.light #ui-dialog-title {
     color: #eee;
 }
 
+html.light #debug-bar {
+    color: #eee;
+}
+
 /* responsive rules */
 @media screen and (max-width: 1100px) {
     #passages {
@@ -658,7 +673,7 @@ html.light #ui-dialog-title {
         width: 6em;
         left: -9em;
     }
-    #space-link button {
+    .big-link button, button.npc-action-link {
         width: 75%;
     }
 }
@@ -692,7 +707,7 @@ html.light #ui-dialog-title {
     html {
         font-size: 90%;
     }
-    #space-link button {
+    .big-link button, button.npc-action-link {
         width: 85%;
     }
 }
@@ -1005,7 +1020,7 @@ if (Config.debug) {
 }
 
 setup.returnPsg = '';
-setup.returnFromShop = 'next';
+setup.returnFromShop = 'hub-main';
 $('#bumper').css('display', 'none');
 /* twine-user-script #6: "dialog-api-macro-set.js" */
 // dialog API macro set, by chapel; for sugarcube 2
@@ -3057,6 +3072,20 @@ $('#caption').ariaClick( function (e) {
     }
 });
 
+// setup return from shop variables
+postdisplay['return-from-shops'] = function (t) {
+    if (tags().includes('shop')) {
+        if (passage() === 'vendor-Kim') {
+            setup.returnFromShop = 'hub-vendor';
+        } else if (passage() === 'mechant-Jack') {
+            setup.returnFromShop = 'hub-shop';
+        }
+    } else {
+        // uh oh
+        setup.returnFromShop = 'hub-main';
+    }
+};
+
 /*    KEYBOARD CONTROLS    */
 
 
@@ -3071,8 +3100,9 @@ $(document).on('keyup', function (e) {
         } else {
             // widget-based return links
             $('#return-link a').trigger('click');
+            $('#return-link button').trigger('click');
         }
-    } else if (e.which == 32) { // space bar
+    } else if (e.which == 32 || e.which == 17) { // space bar
         if ($('#main-talk-action').length) {
             $('#main-talk-action').trigger('click');
         } else {
@@ -3429,7 +3459,8 @@ Character.prototype = {
         
         var inst = this;
         
-        var $link = $(document.createElement('a'));
+        var $link = $(document.createElement('button')),
+            $container = $(document.createElement('div'));
         $link
             .addClass('npc-action-link npc-talk')
             .wiki(text)
@@ -3437,7 +3468,16 @@ Character.prototype = {
                 inst.action();
             });
         
-        return $link;
+        $container
+            .addClass('npc-talk-container')
+            .attr({
+                'align' : 'center',
+                'id'    : 'space-link' // risky
+            })
+            .append($link);
+        
+        
+        return $container;
     },
     
     constructor : window.Character,
@@ -3799,13 +3839,17 @@ function muteHandler () {
     $('#ui-sound').toggleClass('on');
 }
 
-function soundSwitch (group) {
-    var action = (settings[group]) ? 'unmute' : 'mute';
+function soundSwitch (group, parentSetting) {
+    if (!parentSetting) {
+        parentSetting = group;
+    }
+    var action = (settings[parentSetting]) ? 'unmute' : 'mute';
     $.wiki('<<audio ":' + group + '" ' + action + '>>');
 }
 
 function effectsSwitch () {
     soundSwitch('effects');
+    soundSwitch('voice', 'effects');
 }
 function musicSwitch () {
     soundSwitch('music');
@@ -3873,7 +3917,37 @@ Setting.addToggle('ambience', {
 /* twine-user-script #25: "shake-macro-set.min.js" */
 /*! <<shake>> macro set for SugarCube 2.x */
 !function(){"use strict";if("undefined"==typeof version||"undefined"==typeof version.title||"SugarCube"!==version.title||"undefined"==typeof version.major||version.major<2||"undefined"==typeof version.minor||version.minor<5)throw new Error("<<shake>> macro requires SugarCube 2.5.0 or greater, aborting load");Macro.add("shake",{tags:null,handler:function(){var duration=this.args.length>0?this.args[0]:1/0,shakeClass="shake";if(1/0!==duration)try{duration=Math.max(Engine.minDomActionDelay,Util.fromCssTime(duration))}catch(e){return this.error(e.message)}Config.debug&&this.debugView.modes({block:!0});var $wrapper=jQuery(document.createElement("span"));$wrapper.addClass("macro-"+this.name+" "+shakeClass).wiki(this.payload[0].contents).appendTo(this.output),1/0!==duration&&setTimeout(function(){$wrapper.removeClass(shakeClass)},Engine.minDomActionDelay+duration)}}),Macro.add(["shakescreen","shaketarget"],{handler:function(){var $targets,duration,shakeClass;if("shakescreen"===this.name)$targets=jQuery("#passages"),duration=this.args.length>0?this.args[0]:1/0,shakeClass="shake-block";else{if(0===this.args.length)return this.error("no selector specified");if($targets=jQuery(this.args[0]),0===$targets.length)return this.error('no elements matched the selector "'+this.args[0]+'"');duration=this.args.length>1?this.args[1]:1/0,shakeClass="block"===jQuery($targets[0]).css("display")?"shake-block":"shake"}if("stop"===duration)return void $targets.removeClass(shakeClass);if(1/0!==duration)try{duration=Math.max(Engine.minDomActionDelay,Util.fromCssTime(duration))}catch(e){return this.error(e.message)}$targets.addClass(shakeClass),1/0!==duration&&setTimeout(function(){$targets.removeClass(shakeClass)},Engine.minDomActionDelay+duration)}})}();
-/* twine-user-script #26: "upgrades.js" */
+/* twine-user-script #26: "sound-effects.js" */
+// sound-effects.js
+// note: this is a mess; some audio is handled in the interface.js file
+setup.voice = {};
+
+function playSound (track) {
+    if (Array.isArray(track)) {
+        track = track.random();
+    }
+    $.wiki('<<audio "' + track + '" play>>');
+}
+
+function soundOnClick (el, track) {
+    $(el).on('click', function () {
+        playSound(track);
+    });
+}
+
+function soundOnEvent (ev, track) {
+    $(document).on(ev, function () {
+        playSound(track);
+    });
+}
+
+// 'export'
+setup.sounds = {
+    play  : playSound,
+    click : soundOnClick,
+    event : soundOnEvent
+}
+/* twine-user-script #27: "upgrades.js" */
 // upgrades.js
 setup.upgrades = {};
 State.variables.upgradeStore = new Inventory();
@@ -4090,7 +4164,7 @@ $(document).on(':no-money-upgrade', function (e) {
     
     (Config.debug) && console.log('CANNOT BUY UPGRADE: Upgrade ' + e.item + ' for -> ' + e.cost + '; current gold -> ' + State.variables.points);
 });
-/* twine-user-script #27: "volume.js" */
+/* twine-user-script #28: "volume.js" */
 // volume slider, by chapel; for sugarcube 2
 // version 1.0
 
@@ -4158,7 +4232,7 @@ Macro.add('volume', {
 			.appendTo(this.output);
 	}
 });
-/* twine-user-script #28: "workers.js" */
+/* twine-user-script #29: "workers.js" */
 var id = LoadScreen.lock();
 if ('serviceWorker' in navigator && setup.build.web) {
     try {
@@ -4166,7 +4240,7 @@ if ('serviceWorker' in navigator && setup.build.web) {
     } catch (e) {}
 }
 LoadScreen.unlock(id);
-/* twine-user-script #29: "z-bubbles.js" */
+/* twine-user-script #30: "z-bubbles.js" */
 window.bubbles = window.bubbles || {
     animate : function () {
         var canvas = document.getElementById('bgCanvas');
@@ -4254,7 +4328,7 @@ $(document).on(':start-dive', function () {
         bubbles.animation();
     }
 });
-/* twine-user-script #30: "z-macros.js" */
+/* twine-user-script #31: "z-macros.js" */
     /* drop and treasure system macros */
 
 // `<<treasure itemName rarityTier>>Description of item...<</treasure>>` (goes in StoryInit...)
@@ -4616,7 +4690,7 @@ Macro.add('toggleoverlay', {
     }
 });
     /* end overlay macros */
-/* twine-user-script #31: "z-throughline.js" */
+/* twine-user-script #32: "z-throughline.js" */
 // throughline.js
 State.variables.throughLine = {
     dives : 0,
@@ -4710,7 +4784,8 @@ setup.gateWayTest = function () {
 
 [[hub-main]]
 
-&lt;&lt;link &#39;map&#39;&gt;&gt;&lt;&lt;popup &#39;map&#39;&gt;&gt;&lt;&lt;/link&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="next" tags="" position="475,100">&lt;&lt;interact &#39;Kim&#39;&gt;&gt;
+&lt;&lt;link &#39;map&#39;&gt;&gt;&lt;&lt;popup &#39;map&#39;&gt;&gt;&lt;&lt;/link&gt;&gt;
+&lt;&lt;goto &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="next" tags="" position="475,100">&lt;&lt;interact &#39;Kim&#39;&gt;&gt;
 &lt;&lt;interact &#39;Jack&#39;&gt;&gt;
 
 [[back|Start]]</tw-passagedata><tw-passagedata pid="5" name="end-dive" tags="" position="600,100">Your oxygen tanks are running low.  There&#39;s just enough for you to get back to the surface.
@@ -4768,17 +4843,29 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="13" 
         &lt;&lt;audio _track loop play&gt;&gt;
     &lt;&lt;/silently&gt;&gt;\
 &lt;&lt;/widget&gt;&gt;</tw-passagedata><tw-passagedata pid="14" name="linkWidgets" tags="widget nobr" position="475,225">&lt;&lt;widget &#39;returnFromMenu&#39;&gt;&gt;
-    @@#return-link;
-        &lt;&lt;link &#39;Return&#39; setup.returnPsg&gt;&gt;
+    &lt;div align=&#39;center&#39;&gt;@@#return-link;.big-link;
+        &lt;&lt;button &#39;Return&#39; setup.returnPsg&gt;&gt;
             &lt;&lt;set setup.returnPsg to &#39;&#39;&gt;&gt;
             &lt;&lt;audio &quot;switch&quot; play&gt;&gt;
-        &lt;&lt;/link&gt;&gt;
-    @@
+        &lt;&lt;/button&gt;&gt;
+    @@&lt;/div&gt;
 &lt;&lt;/widget&gt;&gt;
-&lt;&lt;widget &#39;spacelink&#39;&gt;&gt;\
-    @@#space-link;
+&lt;&lt;widget &#39;spacelink&#39;&gt;&gt;
+    &lt;div align=&#39;center&#39;&gt;@@#space-link;.big-link;
         &lt;&lt;button $args[0] $args[1]&gt;&gt;&lt;&lt;/button&gt;&gt;
-    @@
+    @@&lt;/div&gt;
+&lt;&lt;/widget&gt;&gt;
+&lt;&lt;widget &#39;biglink&#39;&gt;&gt;
+    &lt;div align=&#39;center&#39;&gt;@@.big-link;
+        &lt;&lt;button $args[0] $args[1]&gt;&gt;&lt;&lt;/button&gt;&gt;
+    @@&lt;/div&gt;
+&lt;&lt;/widget&gt;&gt;
+&lt;&lt;widget &#39;returnlink&#39;&gt;&gt;
+    &lt;div align=&#39;center&#39;&gt;@@#return-link;.big-link;
+        &lt;&lt;button $args[0] $args[1]&gt;&gt;
+            &lt;&lt;audio &quot;switch&quot; play&gt;&gt;
+        &lt;&lt;/button&gt;&gt;
+    @@&lt;/div&gt;
 &lt;&lt;/widget&gt;&gt;</tw-passagedata><tw-passagedata pid="15" name="debug-scene-1" tags="" position="600,225">Hello, this is debug event 1.
 
 &lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="16" name="debug-scene-2" tags="" position="725,225">Hello, this is debug event 2.
@@ -4797,7 +4884,11 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="13" 
 
 &lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="23" name="debug-scene-9" tags="" position="350,350">Hello, this is debug event 9.
 
-&lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="24" name="dive-prep" tags="hub" position="475,350">/% prep for dive %/\</tw-passagedata><tw-passagedata pid="25" name="hub-main" tags="" position="600,350">/% no tag -- tag adds return link %/\
+&lt;&lt;nextscene&gt;&gt;</tw-passagedata><tw-passagedata pid="24" name="dive-prep" tags="hub" position="475,350">/% prep for dive %/\
+Nothing here yet...
+
+&lt;&lt;dive 0&gt;&gt;
+&lt;&lt;returnlink &#39;Return&#39; &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="25" name="hub-main" tags="" position="600,350">/% no tag -- tag adds return link %/\
 /% main menu %/\
 &lt;div id=&#39;main-hub&#39;&gt;\
 |[img[assets/images/icons/hub/sell.svg][hub-vendor]]|[img[assets/images/icons/hub/buy.svg][hub-shop]]|
@@ -4807,8 +4898,55 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="13" 
 |[img[assets/images/icons/hub/cafe.svg][hub-cafe]]|[img[assets/images/icons/hub/donations.svg][hub-temple]]|
 |[[Visit the cafe.|hub-cafe]]|[[Visit the temple.|hub-temple]]|
 &lt;&lt;spacelink &#39;Dive&#39; &#39;dive-prep&#39;&gt;&gt;
-\&lt;/div&gt;</tw-passagedata><tw-passagedata pid="26" name="hub-shop" tags="hub" position="725,350">/% buy %/\</tw-passagedata><tw-passagedata pid="27" name="hub-vendor" tags="hub" position="850,350">/% sell %/\</tw-passagedata><tw-passagedata pid="28" name="hub-cafe" tags="hub" position="975,350">/% chill %/\</tw-passagedata><tw-passagedata pid="29" name="hub-protectors" tags="hub" position="1100,350">/% police %/\</tw-passagedata><tw-passagedata pid="30" name="hub-temple" tags="hub" position="1225,350">/% donate %/\</tw-passagedata><tw-passagedata pid="31" name="hub-workers" tags="hub" position="100,475">/% slums %/\</tw-passagedata><tw-passagedata pid="32" name="audio-init" tags="init" position="225,475">&lt;&lt;include &#39;effects-cache&#39;&gt;&gt;
+\&lt;/div&gt;</tw-passagedata><tw-passagedata pid="26" name="hub-vendor" tags="hub" position="725,350">/% buy %/\
+&lt;&lt;nobr&gt;&gt;
+    &lt;&lt;if !tags(previous()).includesAny(&#39;shop&#39;, &#39;menu&#39;)&gt;&gt;
+        &lt;&lt;run $(document).trigger(&#39;:enter-sell-shop&#39;)&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/nobr&gt;&gt;\
+&lt;&lt;first&gt;&gt;\
+Description (initial)
+&lt;&lt;finally&gt;&gt;\
+Description (every other time)
+&lt;&lt;/first&gt;&gt;\
+
+Description
+
+&lt;&lt;interact &#39;Kim&#39;&gt;&gt;
+&lt;&lt;returnlink &#39;Head back.&#39; &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="27" name="hub-shop" tags="hub" position="850,350">/% sell %/\
+&lt;&lt;nobr&gt;&gt;
+    &lt;&lt;if !tags(previous()).includesAny(&#39;shop&#39;, &#39;menu&#39;)&gt;&gt;
+        &lt;&lt;run $(document).trigger(&#39;:enter-buy-shop&#39;)&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/nobr&gt;&gt;\
+&lt;&lt;first&gt;&gt;\
+Description (initial)
+&lt;&lt;finally&gt;&gt;\
+Description (every other time)
+&lt;&lt;/first&gt;&gt;\
+
+Description
+
+&lt;&lt;interact &#39;Jack&#39;&gt;&gt;
+&lt;&lt;returnlink &#39;Head back.&#39; &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="28" name="hub-cafe" tags="hub" position="975,350">/% chill %/\
+&lt;&lt;run $(document).trigger(&#39;:enter-cafe&#39;)&gt;&gt;\
+Nothing here yet...
+
+&lt;&lt;returnlink &#39;Head back.&#39; &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="29" name="hub-protectors" tags="hub" position="1100,350">/% police %/\
+&lt;&lt;run $(document).trigger(&#39;:enter-protector-post&#39;)&gt;&gt;\
+Nothing here yet...
+
+&lt;&lt;returnlink &#39;Head back.&#39; &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="30" name="hub-temple" tags="hub" position="1225,350">/% donate %/\
+&lt;&lt;run $(document).trigger(&#39;:enter-temple&#39;)&gt;&gt;\
+Nothing here yet...
+
+&lt;&lt;returnlink &#39;Head back.&#39; &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="hub-workers" tags="hub" position="100,475">/% slums %/\
+&lt;&lt;run $(document).trigger(&#39;:enter-slums&#39;)&gt;&gt;\
+Nothing here yet...
+
+&lt;&lt;returnlink &#39;Head back.&#39; &#39;hub-main&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="audio-init" tags="init" position="225,475">&lt;&lt;include &#39;effects-cache&#39;&gt;&gt;
 &lt;&lt;include &#39;music-cache&#39;&gt;&gt;
+&lt;&lt;include &#39;voice-cache&#39;&gt;&gt;
 &lt;&lt;include &#39;group-audio&#39;&gt;&gt;
 /% etc... %/
 
@@ -4819,7 +4957,19 @@ Oxygen: &lt;&lt;= _readout[_i]&gt;&gt;</tw-passagedata><tw-passagedata pid="13" 
 $(document).on(&#39;:start-dive&#39;, function () {
     $.wiki(&quot;&lt;&lt;masteraudio stop&gt;&gt;&lt;&lt;audio &#39;dive&#39; play&gt;&gt;&lt;&lt;playlist &#39;ambience&#39; shuffle play&gt;&gt;&quot;);
 });
-&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="33" name="effects-cache" tags="init" position="350,475">&lt;&lt;set _path to &#39;assets/audio/effects/&#39;&gt;&gt;
+&lt;&lt;/script&gt;&gt;
+/% set up voices %/
+&lt;&lt;run setup.sounds.event(&#39;:sell-success&#39;, setup.voice.kim.sale)&gt;&gt;
+&lt;&lt;run setup.sounds.event(&#39;:enter-sell-shop&#39;, setup.voice.kim.greet)&gt;&gt;
+&lt;&lt;run setup.sounds.event(&#39;:purchase-upgrade&#39;, setup.voice.jack.sale)&gt;&gt;
+&lt;&lt;run setup.sounds.event(&#39;:enter-buy-shop&#39;, setup.voice.jack.greet)&gt;&gt;
+
+/% audio adjustments %/
+&lt;&lt;audio &#39;:music&#39; volume 0.4&gt;&gt;
+&lt;&lt;audio &#39;:effects&#39; volume 0.4&gt;&gt;
+&lt;&lt;audio &#39;:ambience&#39; volume 0.4&gt;&gt;
+&lt;&lt;audio &#39;:voice&#39; volume 1.0&gt;&gt;
+&lt;&lt;audio &#39;switch&#39; volume 0.2&gt;&gt;</tw-passagedata><tw-passagedata pid="33" name="effects-cache" tags="init" position="350,475">&lt;&lt;set _path to &#39;assets/audio/effects/&#39;&gt;&gt;
 
 &lt;&lt;cacheaudio &#39;underwater1&#39; 
     `_path + &#39;underwater1.ogg&#39;` 
@@ -4857,6 +5007,9 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;cacheaudio &#39;beep&#39; 
     `_path + &#39;beep.ogg&#39;` 
     `_path + &#39;beep.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;buy&#39; 
+    `_path + &#39;buy.ogg&#39;` 
+    `_path + &#39;buy.mp3&#39;`&gt;&gt;
 &lt;&lt;cacheaudio &#39;cocking&#39; 
     `_path + &#39;cocking.ogg&#39;` 
     `_path + &#39;cocking.mp3&#39;`&gt;&gt;
@@ -4872,6 +5025,9 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;cacheaudio &#39;page&#39; 
     `_path + &#39;page.ogg&#39;` 
     `_path + &#39;page.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;steps&#39; 
+    `_path + &#39;steps.ogg&#39;` 
+    `_path + &#39;steps.mp3&#39;`&gt;&gt;
 &lt;&lt;cacheaudio &#39;switch&#39; 
     `_path + &#39;switch.ogg&#39;` 
     `_path + &#39;switch.mp3&#39;`&gt;&gt;</tw-passagedata><tw-passagedata pid="34" name="music-cache" tags="init" position="475,475">&lt;&lt;set _path to &#39;assets/audio/music/&#39;&gt;&gt;
@@ -4906,7 +5062,130 @@ $(document).on(&#39;:start-dive&#39;, function () {
     //&#39;que-pena&#39;,
     &#39;raindrops&#39;,
     &#39;untitled&#39;
-]&gt;&gt;</tw-passagedata><tw-passagedata pid="35" name="group-audio" tags="init" position="600,475">&lt;&lt;createaudiogroup &#39;:music&#39;&gt;&gt;
+]&gt;&gt;</tw-passagedata><tw-passagedata pid="35" name="voice-cache" tags="init" position="600,475">&lt;&lt;set _path to &#39;assets/audio/voice/&#39;&gt;&gt;
+
+/% kim %/
+&lt;&lt;cacheaudio &#39;kim-crazy1&#39; 
+    `_path + &#39;kim-crazy1.ogg&#39;` 
+    `_path + &#39;kim-crazy1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-crazy2&#39; 
+    `_path + &#39;kim-crazy2.ogg&#39;` 
+    `_path + &#39;kim-crazy2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-crazy3&#39; 
+    `_path + &#39;kim-crazy3.ogg&#39;` 
+    `_path + &#39;kim-crazy3.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-else1&#39; 
+    `_path + &#39;kim-else1.ogg&#39;` 
+    `_path + &#39;kim-else1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-else2&#39; 
+    `_path + &#39;kim-else2.ogg&#39;` 
+    `_path + &#39;kim-else2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-else3&#39; 
+    `_path + &#39;kim-else3.ogg&#39;` 
+    `_path + &#39;kim-else3.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-hi1&#39; 
+    `_path + &#39;kim-hi1.ogg&#39;` 
+    `_path + &#39;kim-hi1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-hi2&#39; 
+    `_path + &#39;kim-hi2.ogg&#39;` 
+    `_path + &#39;kim-hi2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-hope1&#39; 
+    `_path + &#39;kim-hope1.ogg&#39;` 
+    `_path + &#39;kim-hope1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-hope2&#39; 
+    `_path + &#39;kim-hope2.ogg&#39;` 
+    `_path + &#39;kim-hope2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-ok1&#39; 
+    `_path + &#39;kim-ok1.ogg&#39;` 
+    `_path + &#39;kim-ok1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-ok2&#39; 
+    `_path + &#39;kim-ok2.ogg&#39;` 
+    `_path + &#39;kim-ok2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-ok3&#39; 
+    `_path + &#39;kim-ok3.ogg&#39;` 
+    `_path + &#39;kim-ok3.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-sup1&#39; 
+    `_path + &#39;kim-sup1.ogg&#39;` 
+    `_path + &#39;kim-sup1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-sup2&#39; 
+    `_path + &#39;kim-sup2.ogg&#39;` 
+    `_path + &#39;kim-sup2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-sup3&#39; 
+    `_path + &#39;kim-sup3.ogg&#39;` 
+    `_path + &#39;kim-sup3.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-thatit1&#39; 
+    `_path + &#39;kim-thatit1.ogg&#39;` 
+    `_path + &#39;kim-thatit1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;kim-thatit2&#39; 
+    `_path + &#39;kim-thatit2.ogg&#39;` 
+    `_path + &#39;kim-thatit2.mp3&#39;`&gt;&gt;
+
+&lt;&lt;set setup.voice.kim to {
+    greet : [
+        &#39;kim-hi1&#39;, 
+        &#39;kim-hi2&#39;, 
+        &#39;kim-sup1&#39;, 
+        &#39;kim-sup2&#39;, 
+        &#39;kim-sup3&#39;
+    ],
+    sale : [
+        &#39;kim-ok1&#39;, 
+        &#39;kim-ok2&#39;, 
+        &#39;kim-ok3&#39;, 
+        &#39;kim-else1&#39;, 
+        &#39;kim-else2&#39;,
+        &#39;kim-else3&#39;,
+        &#39;kim-thatit1&#39;,
+        &#39;kim-thatit2&#39;,
+        &#39;kim-hope1&#39;,
+        &#39;kim-hope2&#39;
+    ]
+}&gt;&gt;
+
+/% jack %/
+&lt;&lt;cacheaudio &#39;jack-hi1&#39; 
+    `_path + &#39;jack-hi1.ogg&#39;` 
+    `_path + &#39;jack-hi1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-hi2&#39; 
+    `_path + &#39;jack-hi2.ogg&#39;` 
+    `_path + &#39;jack-hi2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-hi3&#39; 
+    `_path + &#39;jack-hi3.ogg&#39;` 
+    `_path + &#39;jack-hi3.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-nice1&#39; 
+    `_path + &#39;jack-nice1.ogg&#39;` 
+    `_path + &#39;jack-nice1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-nice2&#39; 
+    `_path + &#39;jack-nice2.ogg&#39;` 
+    `_path + &#39;jack-nice2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-ok1&#39; 
+    `_path + &#39;jack-ok1.ogg&#39;` 
+    `_path + &#39;jack-ok1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-ok2&#39; 
+    `_path + &#39;jack-ok2.ogg&#39;` 
+    `_path + &#39;jack-ok2.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-yes1&#39; 
+    `_path + &#39;jack-yes1.ogg&#39;` 
+    `_path + &#39;jack-yes1.mp3&#39;`&gt;&gt;
+&lt;&lt;cacheaudio &#39;jack-yes2&#39; 
+    `_path + &#39;jack-yes2.ogg&#39;` 
+    `_path + &#39;jack-yes2.mp3&#39;`&gt;&gt;
+
+&lt;&lt;set setup.voice.jack to {
+    greet : [
+        &#39;jack-hi1&#39;, 
+        &#39;jack-hi2&#39;, 
+        &#39;jack-hi3&#39;, 
+        &#39;jack-yes1&#39;, 
+        &#39;jack-yes2&#39;
+    ],
+    sale : [
+        &#39;jack-ok1&#39;, 
+        &#39;jack-ok2&#39;, 
+        &#39;jack-nice1&#39;, 
+        &#39;jack-nice2&#39;
+    ]
+}&gt;&gt;</tw-passagedata><tw-passagedata pid="36" name="group-audio" tags="init" position="725,475">&lt;&lt;createaudiogroup &#39;:music&#39;&gt;&gt;
     &lt;&lt;track &#39;51oh&#39;&gt;&gt;
     &lt;&lt;track &#39;cibelle&#39;&gt;&gt;
     &lt;&lt;track &#39;cidade-sol&#39;&gt;&gt;
@@ -4926,13 +5205,46 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;createaudiogroup &#39;:effects&#39;&gt;&gt;
     &lt;&lt;track &#39;dive&#39;&gt;&gt;
     &lt;&lt;track &#39;beep&#39;&gt;&gt;
+    &lt;&lt;track &#39;buy&#39;&gt;&gt;
     &lt;&lt;track &#39;cocking&#39;&gt;&gt;
     &lt;&lt;track &#39;dice&#39;&gt;&gt;
     &lt;&lt;track &#39;next&#39;&gt;&gt;
     &lt;&lt;track &#39;no&#39;&gt;&gt;
     &lt;&lt;track &#39;page&#39;&gt;&gt;
+    &lt;&lt;track &#39;steps&#39;&gt;&gt;
     &lt;&lt;track &#39;switch&#39;&gt;&gt;
-&lt;&lt;/createaudiogroup&gt;&gt;</tw-passagedata><tw-passagedata pid="36" name="scenes-init" tags="init" position="725,475">&lt;&lt;scene &#39;debug-scene-1&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
+&lt;&lt;/createaudiogroup&gt;&gt;
+&lt;&lt;createaudiogroup &#39;:voice&#39;&gt;&gt;
+    /% kim %/
+    &lt;&lt;track &#39;kim-crazy1&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-crazy2&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-crazy3&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-else1&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-else2&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-else3&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-hi1&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-hi2&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-hope1&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-hope2&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-ok1&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-ok2&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-ok3&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-sup1&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-sup2&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-sup3&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-thatit1&#39;&gt;&gt;
+    &lt;&lt;track &#39;kim-thatit2&#39;&gt;&gt;
+    /% jack %/
+    &lt;&lt;track &#39;jack-hi1&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-hi2&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-hi3&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-nice1&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-nice2&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-ok1&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-ok2&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-yes1&#39;&gt;&gt;
+    &lt;&lt;track &#39;jack-yes2&#39;&gt;&gt;
+&lt;&lt;/createaudiogroup&gt;&gt;</tw-passagedata><tw-passagedata pid="37" name="scenes-init" tags="init" position="850,475">&lt;&lt;scene &#39;debug-scene-1&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-2&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-3&#39; &#39;debug&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 
@@ -4942,7 +5254,7 @@ $(document).on(&#39;:start-dive&#39;, function () {
 
 &lt;&lt;scene &#39;debug-scene-7&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;debug-scene-8&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;
-&lt;&lt;scene &#39;debug-scene-9&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="37" name="StoryInit" tags="" position="850,475">/% lock the load screen %/
+&lt;&lt;scene &#39;debug-scene-9&#39; &#39;debug&#39; &#39;rare&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="38" name="StoryInit" tags="" position="975,475">/% lock the load screen %/
 &lt;&lt;set _id to LoadScreen.lock()&gt;&gt;
 
 /% basic setup %/
@@ -4979,16 +5291,16 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;
 
 /% mobile mode 
-&lt;&lt;run setup.mobileMode.init()&gt;&gt;%/</tw-passagedata><tw-passagedata pid="38" name="npcs-init" tags="init" position="975,475">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
-&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="39" name="vendor-Kim" tags="shop" position="1100,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Loot Vendor&lt;/span&gt;&lt;/span&gt;
+&lt;&lt;run setup.mobileMode.init()&gt;&gt;%/</tw-passagedata><tw-passagedata pid="39" name="npcs-init" tags="init" position="1100,475">&lt;&lt;vendor &#39;Kim&#39; &#39;yo&#39; &#39;hi&#39; &#39;sell me shiz&#39;&gt;&gt;A debug vendor&lt;&lt;/vendor&gt;&gt;
+&lt;&lt;merchant &#39;Jack&#39; &#39;i sell you things&#39; &#39;give me gold, bro&#39;&gt;&gt;A debug merchant&lt;&lt;/merchant&gt;&gt;</tw-passagedata><tw-passagedata pid="40" name="vendor-Kim" tags="shop" position="1225,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Loot Vendor&lt;/span&gt;&lt;/span&gt;
 
 Kim: &quot;What have you got for me, diver?&quot;
 
-&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="40" name="merchant-Jack" tags="shop" position="1225,475">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Upgrade Shop&lt;/span&gt;&lt;/span&gt;
+&lt;&lt;sellmenu &#39;Kim&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="41" name="merchant-Jack" tags="shop" position="100,600">&lt;span id=&#39;menu-heading&#39;&gt;@@#menu-icon;[img[assets/images/icons/cash.svg]]@@&lt;span id=&#39;menu-text&#39;&gt;Funds: @@#money;$points@@ | Upgrade Shop&lt;/span&gt;&lt;/span&gt;
 
 Jack: &quot;See anything you like?&quot;
 
-&lt;&lt;store&gt;&gt;</tw-passagedata><tw-passagedata pid="41" name="treasures-init" tags="init" position="100,600">/% 60 items %/
+&lt;&lt;store&gt;&gt;</tw-passagedata><tw-passagedata pid="42" name="treasures-init" tags="init" position="225,600">/% 60 items %/
 
 /% common treasures (28) %/
 &lt;&lt;treasure &#39;shiny stone&#39; &#39;common&#39;&gt;&gt;
@@ -5379,11 +5691,12 @@ A tool that can capture sound, cutting it into a glass disk
 to be replayed later at the owner&#39;s whim.
 
 While largely a bauble, it&#39;s intricate circuitry will be of value.
-&lt;&lt;/treasure&gt;&gt;</tw-passagedata><tw-passagedata pid="42" name="upgrades-init" tags="init" position="225,600">/% each upgrade needs to be tested and reinstated on game load %/
+&lt;&lt;/treasure&gt;&gt;</tw-passagedata><tw-passagedata pid="43" name="upgrades-init" tags="init" position="350,600">/% each upgrade needs to be tested and reinstated on game load %/
 
 &lt;&lt;upgrade &#39;Additional Tank x1&#39; 150&gt;&gt;
     &lt;&lt;set $scenesPerDive += 2&gt;&gt;
     &lt;&lt;drop &#39;$upgradeStore&#39; &#39;Additional Tank x1&#39;&gt;&gt;
+    &lt;&lt;drop &#39;$upgradeStore&#39; &#39;Additional Tank x2&#39;&gt;&gt;
     &lt;&lt;pickup &#39;$upgradeStore&#39; &#39;Additional Tank x2&#39;&gt;&gt;
 &lt;&lt;descr&gt;&gt;
 An additional oxygen tank.  
@@ -5420,7 +5733,7 @@ You&#39;ll be able to dive deeper with this.
 &lt;&lt;upgrade &#39;Pressure Suit Lv.2&#39; 400&gt;&gt;
     &lt;&lt;set $depthUnlocked to 1&gt;&gt;
     &lt;&lt;drop &#39;$playerUpgrades&#39; &#39;Pressure Suit Lv.1&#39;&gt;&gt;
-    &lt;&lt;drop &#39;$upgradeStore&#39; &#39;Pressure Suit Lv.2&#39; &#39;Pressure Suit Lv.1&#39;&gt;&gt;
+    &lt;&lt;drop &#39;$upgradeStore&#39; &#39;Pressure Suit Lv.3&#39; &#39;Pressure Suit Lv.2&#39; &#39;Pressure Suit Lv.1&#39;&gt;&gt;
     &lt;&lt;pickup &#39;$upgradeStore&#39; &#39;Pressure Suit Lv.3&#39;&gt;&gt;
 &lt;&lt;descr&gt;&gt;
 An upgrade for a  hardier pressure suit.
@@ -5431,7 +5744,7 @@ You&#39;ll be able to dive deeper with this.
 &lt;&lt;upgrade &#39;Pressure Suit Lv.3&#39; 800&gt;&gt;
     &lt;&lt;set $depthUnlocked to 2&gt;&gt;
     &lt;&lt;drop &#39;$playerUpgrades&#39; &#39;Pressure Suit Lv.2&#39;&gt;&gt;
-    &lt;&lt;drop &#39;$upgradeStore&#39; &#39;Pressure Suit Lv.3&#39; &#39;Pressure Suit Lv.2&#39; &#39;Pressure Suit Lv.1&#39;&gt;&gt;
+    &lt;&lt;drop &#39;$upgradeStore&#39; &#39;Pressure Suit Lv.4&#39; &#39;Pressure Suit Lv.3&#39; &#39;Pressure Suit Lv.2&#39; &#39;Pressure Suit Lv.1&#39;&gt;&gt;
     &lt;&lt;pickup &#39;$upgradeStore&#39; &#39;Pressure Suit Lv.4&#39;&gt;&gt;
 &lt;&lt;descr&gt;&gt;
 An upgrade for a  hardier pressure suit.
