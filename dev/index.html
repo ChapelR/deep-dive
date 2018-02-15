@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html data-init="no-js">
 <head><link rel="manifest" href="app/manifest.json" />
+<script>
+if ('serviceWorker' in navigator && setup.build.web) {
+    try {
+        if (navigator.serviceWorker.controller) {
+            // console.log('[Service Workers already registered].');
+        } else {
+            navigator.serviceWorker.register('sw.js', {
+                scope: './'
+            }).then(function(reg) {
+                // console.log('Service worker has been registered for scope:' +reg.scope);
+            });
+        }
+    } catch (e) {}
+}</script>
 <meta charset="UTF-8" />
 <title>Deep Dive</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
