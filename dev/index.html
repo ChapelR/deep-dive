@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html data-init="no-js">
-<head>
+<head><link rel="manifest" href="app/manifest.json" />
 <meta charset="UTF-8" />
 <title>Deep Dive</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -956,7 +956,7 @@ setup.build = {
 // web app manifest 
 if (setup.build.web) {
     $(document.head).append('<meta name="theme-color" content="#555" />'); // mobile browser toolbar
-    $(document.head).append('<link rel="manifest" href="manifest.json" />'); // web app manifest
+    $(document.head).append('<link rel="manifest" href="app/manifest.json" />'); // web app manifest
 }
 
 // icon
