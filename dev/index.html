@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html data-init="no-js">
 <head>
-<link rel="manifest" href="app/manifest.json" /><script>if("serviceWorker"in navigator)try{navigator.serviceWorker.controller&&navigator.serviceWorker.register("sw.js",{scope:"./"})}catch(r){}</script>
+<link rel="manifest" href="app/manifest.json" /><script>if("serviceWorker"in navigator)try{navigator.serviceWorker.controller||navigator.serviceWorker.register("sw.js",{scope:"./"})}catch(r){}</script>
 <meta charset="UTF-8" />
 <title>Deep Dive</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
