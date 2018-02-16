@@ -23,8 +23,60 @@ var precacheFiles = [
         // fonts 
         'assets/fonts/base.ttf',
         'assets/fonts/rob.ttf',
-        'assets/fonts/rob-m.ttf'
-        /* no audio */
+        'assets/fonts/rob-m.ttf',
+        // effects
+        'assets/audio/effects/dive.mp3',
+        'assets/audio/effects/underwater1.mp3',
+        'assets/audio/effects/underwater2.mp3',
+        'assets/audio/effects/underwater3.mp3',
+        'assets/audio/effects/underwater4.mp3',
+        'assets/audio/effects/underwater5.mp3',
+        'assets/audio/effects/underwater6.mp3',
+        'assets/audio/effects/links/beep.mp3',
+        'assets/audio/effects/links/buy.mp3',
+        'assets/audio/effects/links/cocking.mp3',
+        'assets/audio/effects/links/dice.mp3',
+        'assets/audio/effects/links/next.mp3',
+        'assets/audio/effects/links/no.mp3',
+        'assets/audio/effects/links/page.mp3',
+        'assets/audio/effects/links/steps.mp3',
+        'assets/audio/effects/links/switch.mp3',
+        // music
+        'assets/audio/music/51oh.mp3',
+        'assets/audio/music/cibelle.mp3',
+        'assets/audio/music/cidade-sol.mp3',
+        'assets/audio/music/milan.mp3',
+        'assets/audio/music/que-pena.mp3',
+        'assets/audio/music/raindrops.mp3',
+        'assets/audio/music/untitled.mp3',
+        // voice lines 
+        'assets/audio/voice/jack-hi1.mp3',
+        'assets/audio/voice/jack-hi2.mp3',
+        'assets/audio/voice/jack-hi3.mp3',
+        'assets/audio/voice/jack-nice1.mp3',
+        'assets/audio/voice/jack-nice2.mp3',
+        'assets/audio/voice/jack-ok1.mp3',
+        'assets/audio/voice/jack-ok2.mp3',
+        'assets/audio/voice/jack-yes1.mp3',
+        'assets/audio/voice/jack-yes2.mp3',
+        'assets/audio/voice/kim-crazy1.mp3',
+        'assets/audio/voice/kim-crazy2.mp3',
+        'assets/audio/voice/kim-crazy3.mp3',
+        'assets/audio/voice/kim-else1.mp3',
+        'assets/audio/voice/kim-else2.mp3',
+        'assets/audio/voice/kim-else3.mp3',
+        'assets/audio/voice/kim-hi1.mp3',
+        'assets/audio/voice/kim-hi2.mp3',
+        'assets/audio/voice/kim-hope1.mp3',
+        'assets/audio/voice/kim-hope2.mp3',
+        'assets/audio/voice/kim-ok1.mp3',
+        'assets/audio/voice/kim-ok2.mp3',
+        'assets/audio/voice/kim-ok3.mp3',
+        'assets/audio/voice/kim-sup1.mp3',
+        'assets/audio/voice/kim-sup2.mp3',
+        'assets/audio/voice/kim-sup3.mp3',
+        'assets/audio/voice/kim-thatit1.mp3',
+        'assets/audio/voice/kim-thatit2.mp3'
     ];
 
 //Install stage sets up the cache-array to configure pre-cache content
@@ -63,7 +115,7 @@ function fromCache(request) {
     //we pull files from the cache first thing so we can show them fast
     return caches.open(CACHE).then(function (cache) {
         return cache.match(request).then(function (matching) {
-            return matching || Promise.reject('no-match').then( cache.add(request.url) ).catch();
+            return matching || Promise.reject('no-match');
         });
     });
 }
