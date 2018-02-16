@@ -63,15 +63,15 @@ function fromCache(request) {
     //we pull files from the cache first thing so we can show them fast
     return caches.open(CACHE).then(function (cache) {
         return cache.match(request).then(function (matching) {
-            return matching || Promise.reject('no-match');
+            return matching || Promise.reject('no-match').then( cache.add(request.url) ).catch();
         });
     });
 }
 
 
 function update(request) {
-    //this is where we call the server to get the newest version of the 
-    //file to use the next time we show view
+    // this is where we call the server to get the newest version of the 
+    // file to use the next time we show view
     return caches.open(CACHE).then(function (cache) {
         return fetch(request).then(function (response) {
             return cache.put(request, response);
