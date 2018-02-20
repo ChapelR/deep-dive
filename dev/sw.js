@@ -47,7 +47,7 @@ var precacheFiles = [
         // fonts 
         'assets/fonts/base.ttf',
         'assets/fonts/rob.ttf',
-        'assets/fonts/rob-m.ttf',
+        'assets/fonts/rob-m.ttf' /*,
         // effects
         'assets/audio/effects/cafe.mp3',
         'assets/audio/effects/dive.mp3',
@@ -74,6 +74,8 @@ var precacheFiles = [
         'assets/audio/music/que-pena.mp3',
         'assets/audio/music/raindrops.mp3',
         'assets/audio/music/untitled.mp3',
+        'assets/audio/music/special/eyes-fire.mp3',
+        'assets/audio/music/special/nothing-left.mp3',
         // voice lines 
         'assets/audio/voice/jack-hi1.mp3',
         'assets/audio/voice/jack-hi2.mp3',
@@ -102,6 +104,7 @@ var precacheFiles = [
         'assets/audio/voice/kim-sup3.mp3',
         'assets/audio/voice/kim-thatit1.mp3',
         'assets/audio/voice/kim-thatit2.mp3'
+        */
     ];
 
 //Install stage sets up the cache-array to configure pre-cache content
@@ -153,12 +156,15 @@ function update(request) {
         return fetch(request).then(function (response) {
             return cache.put(request, response);
         });
+        console.log(CACHE);
     });
 }
 
 function fromServer(request){
     //this is the fallback if it is not in the cahche to go to the server and get it
-    return fetch(request).then(function(response){ return response})
+    return fetch(request).then(function(response){ return response }).then( function (response) {
+        update(request)
+    });
 }
 
 
