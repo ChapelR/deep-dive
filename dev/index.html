@@ -1273,8 +1273,8 @@ $(document).on(&#39;:start-dive&#39;, function () {
 &lt;&lt;scene &#39;home&#39; &#39;place&#39; &#39;common&#39; 0 1 2&gt;&gt;
 &lt;&lt;scene &#39;diver-meet&#39; &#39;adventure&#39; &#39;common&#39; 0 1 2 3&gt;&gt;
 &lt;&lt;scene &#39;factory&#39; &#39;place&#39; &#39;common&#39; 0 1&gt;&gt;
-&lt;&lt;scene &#39;angel-fire&#39; &#39;lore&#39; &#39;common&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="96" name="StoryInit" tags="" position="725,1225">/% lock the load screen %/
-&lt;&lt;set _id to LoadScreen.lock()&gt;&gt;
+&lt;&lt;scene &#39;angel-fire&#39; &#39;lore&#39; &#39;common&#39; 0 1 2 3&gt;&gt;</tw-passagedata><tw-passagedata pid="96" name="StoryInit" tags="" position="725,1225">/% lock the load screen
+&lt;&lt;set _id to LoadScreen.lock()&gt;&gt; %/
 
 /% basic setup %/
 &lt;&lt;set $tracking to {}&gt;&gt;
@@ -1320,8 +1320,8 @@ $(document).on(&#39;:start-dive&#39;, function () {
 /% debugging aids %/
 &lt;&lt;run (Config.debug) &amp;&amp; setup.build.log()&gt;&gt;
 
-/% dismiss the load screen %/
-&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt;
+/% dismiss the load screen
+&lt;&lt;run LoadScreen.unlock(_id)&gt;&gt; %/
 
 /% mobile mode 
 &lt;&lt;run setup.mobileMode.init()&gt;&gt;%/</tw-passagedata><tw-passagedata pid="97" name="npcs-init" tags="init" position="850,1225">&lt;&lt;vendor &#39;Kim&#39; &#39;Hm, that looks interesting.&#39; 
