@@ -1055,25 +1055,83 @@ body .markdown-body
 .codehilite .vi{color:teal}
 .codehilite .il{color:#009999}
 .codehilite .gc{color:#999;background-color:#EAF2F5}
-</style><title>readme</title></head><body><article class="markdown-body"><h1 id="deep-dive-event-scaffolding">Deep Dive Event Scaffolding<a class="headerlink" href="#deep-dive-event-scaffolding" title="Permanent link"></a></h1>
-<h2 id="ground-floor-intro">Ground Floor Intro<a class="headerlink" href="#ground-floor-intro" title="Permanent link"></a></h2>
-<p>Atlantis has sunken into the ocean. The survivors have gathered in the cities highest points, where they are attempting to rebuild. The player is a diver, diving into the ruins of Atlantis to find materials and treasures. These dives are made up of random events.</p>
-<h2 id="detailed-information">Detailed Information<a class="headerlink" href="#detailed-information" title="Permanent link"></a></h2>
-<ul>
-<li><a href="docs/events.html">Event Writing Guide</a></li>
-<li><a href="docs/lore.html">Lore Overview</a></li>
-<li><a href="docs/mechanics.html">Mechanics Overview</a></li>
-<li><a href="docs/macros.html">Macros</a></li>
-</ul>
-<h2 id="using-the-scaffold">Using the Scaffold<a class="headerlink" href="#using-the-scaffold" title="Permanent link"></a></h2>
-<p>Download the <a href="scaffold.zip">scaffold</a> and extract it. There are two project files: <code>archive.tw2.html</code> and <code>scaffold.html</code>. The former can be imported into Twine 2 or Tweego, the latter can be imported into or decompiled with most other compilers that can use SugarCube v2.x. You can use this simple project to create and test events.</p>
-<p>You&rsquo;ll want to read the <a href="docs/events.html">event writing guide</a> for a primer on how to do that. If anything confuses you, the <a href="docs/mechanics.html">mechanics</a> and <a href="docs/macros.html">macro</a> overviews will likely help clarify any finer points, but feel free to ask me too.</p>
-<p>I would ask that you please read the <a href="docs/lore.html">lore</a> overview.</p>
-<h2 id="sending-me-events">Sending Me Events<a class="headerlink" href="#sending-me-events" title="Permanent link"></a></h2>
-<p>Please send me the events as compiled html using the scaffold; just compile / publish your scaffold project to html and send it. Please send only one event per file (though you can send a bunch per email / message), by uploading it to a shared Google drive folder I will share with you. If you don&rsquo;t want to or can&rsquo;t use Google Drive, you can instead email me the files at <code>Mason_(359*2)@hotmail.com</code> (note, do the math there to get the number, and lose the parens).</p>
-<p>I will not necessarily except all events. Please send me an email that gives me, Chapel, the right to publish, modify, and distribute your work.  For example:</p>
-<div class="codehilite"><pre>I give Chapel the right to publish, modify, and distribute the content in the attached files without limitation, as long as proper attribution is given.
+</style><title>events</title></head><body><article class="markdown-body"><h1 id="events">Events<a class="headerlink" href="#events" title="Permanent link"></a></h1>
+<p><a href="../readme.html">Back to the main readme.</a></p>
+<h2 id="creating-events">Creating Events<a class="headerlink" href="#creating-events" title="Permanent link"></a></h2>
+<p>To create an event, simply create a new passage, and link to it from the <code>Start</code> passage.  Pease give your event a descriptive name.  For example: <code>broken-terminal</code>. If your event is longer than one passage, each passage name should start with the same name, followed by a description, e.g. <code>broken-terminal-fix</code> could be a result of trying to fix the terminal.</p>
+<p>Try to use the <code>&lt;&lt;biglink&gt;&gt;</code> macro to link between your passages whenever possible, as this reduces the work on my end.</p>
+<p>Every event is given a random value between 1 and 100 when the event is started, and it&rsquo;s stored in the <code>$chance</code> variable. No random elements should exist on an event&rsquo;s first passage; the reason for this is to prevent the player from getting different outcomes by reloading the page, loading a save, or leaving a menu. This means you should not use your own random numbers or elements, i.e. don&rsquo;t use <code>random()</code> or <code>either()</code>, pipe everything through <code>$chance</code>.</p>
+<p>After the event ends, use the <code>&lt;&lt;nextscene&gt;&gt;</code> macro to end it. If the player makes some bad choice or fails at some thing, they won&rsquo;t die. Always instead spin it so they&rsquo;re forced to return to the surface, using the <code>&lt;&lt;surface&gt;&gt;</code> macro; a tank is leaking, they&rsquo;re hurt, their suit is damaged etc. Again, never kill the player.</p>
+<p>Use the <code>&lt;&lt;loot&gt;&gt;</code> macro to reward the player. <code>&lt;&lt;loot&gt;&gt;</code> gives completely random loot. <code>&lt;&lt;loot n&gt;&gt;</code>, where <code>n</code> is a number between 0 and 3 gives loot at differing odds; 0 has the lowest chance of good loot, while 1, 2, and 3 have increasing odds of better loot. <code>&lt;&lt;loot $location&gt;&gt;</code> gives loot based on how deep the player is right now, so generates a nice curve through the game. Most loot should be location based or totally random, unless you&rsquo;re rewarding the player for having an item or making a smart choice; in these cases, a nice <code>&lt;&lt;loot 2&gt;&gt;</code> or <code>&lt;&lt;loot 3&gt;&gt;</code> is fine.</p>
+<h2 id="passage-tags">Passage Tags<a class="headerlink" href="#passage-tags" title="Permanent link"></a></h2>
+<p>If your event should be unique, meaning that it would only make sense if it happened once, add the passage tag <code>unique</code> to it&rsquo;s first passage. If the player cannot easily leave the event, for example if they&rsquo;re trapped or being attacked, add the <code>no-return</code> tag to every passage where leaving wouldn&rsquo;t make sense.</p>
+<h2 id="general-guidelines">General Guidelines<a class="headerlink" href="#general-guidelines" title="Permanent link"></a></h2>
+<p>Should be written in second person and present tense. Try to keep the overall tone serious, but funny insights or other moments are welcome. Try to avoid scenes that send the player back to the surface&ndash;using these too much weakens the effect. Give the player the option to move on liberally. Let them just nope out of it when it&rsquo;s bad, or just not mess with it at all if they don&rsquo;t want to.</p>
+<h2 id="checking-gear">Checking gear<a class="headerlink" href="#checking-gear" title="Permanent link"></a></h2>
+<p>They player has some gear that you can check for to make a scene more interesting. Try to avoid &lsquo;requiring&rsquo; it; instead, make the outcome better or the process easier.</p>
+<p>Gear checks are boolean variables. Here&rsquo;s a list of gear specifically for dives:
+<div class="codehilite"><pre>Harpoon: $hasHarpoon
+Lock Pick: $hasLockPick (opens only simple locks)
+Skeleton Key: $hasSkeletonKey (opens any &#39;legal&#39; lock in Atlantis, used by the protectors to get anywhere)
+Head Lamp: $hasHeadLamp (the player has one regardless, this one is better and brighter)
+Scanner: $hasScanner (used to closely inspect objects; sort of a super microscope)
+</pre></div></p>
+<h2 id="eaxmple-event">Eaxmple Event<a class="headerlink" href="#eaxmple-event" title="Permanent link"></a></h2>
+<div class="codehilite"><pre>:: found-chest [common]
+You find yourself on a &lt;&lt;if $chance lt 33&gt;&gt;street&lt;&lt;elseif $chance lt 66&gt;&gt;boulevard&lt;&lt;else&gt;&gt;thoroughfare&lt;&lt;/if&gt;&gt; in some small neighborhood you&#39;ve never seen before, sandwiched between a few different places you&#39;ve heard of. A few parts of a skeleton nearby are trapped under a lockbox. There&#39;s probably a lesson in there somewhere.
+
+You check the box and find it locked, of course. 
+
+&lt;&lt;if $hasLockPick&gt;&gt;\
+    &lt;&lt;biglink &#39;Try to pick the lock.&#39; &#39;found-chest-pick&#39;&gt;&gt;
+&lt;&lt;/if&gt;&gt;\
+&lt;&lt;biglink &#39;Look for a way to force it open.&#39; &#39;found-chest-look&#39;&gt;&gt;
+&lt;&lt;biglink &#39;Leave it be.&#39; &#39;found-chest-leave&#39;&gt;&gt;
+
+:: found-chest-leave [common]
+You figure the chest might have a taste for blood at this point, and don&#39;t want to tempt fate. Besides, disturbing a grave is beneath you.
+
+You take another cursory glance around before hoofing it, &lt;&lt;if $chance lt 25&gt;&gt;and your thoroughness is rewarded when you find some useful odds and ends near a house. &lt;&lt;loot $location&gt;&gt;&lt;&lt;else&gt;&gt;but nothing catches your eye.&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;nextscene&gt;&gt;
+
+:: found-chest-pick [common]
+The lock isn&#39;t in great shape, but you manage to get it open.
+
+There&#39;s some pretty decent loot inside, and you pack it all up. &lt;&lt;loot&gt;&gt;&lt;&lt;loot 3&gt;&gt;&lt;&lt;loot $location&gt;&gt;
+
+&lt;&lt;nextscene&gt;&gt;
+
+:: found-chest-look [common]
+You take a look around for something that might help, &lt;&lt;if $chance lt 35&gt;&gt;&lt;&lt;set _foundShovel to true&gt;&gt;and see a shovel not far off. You may be able to use it to pop this box open.&lt;&lt;elseif $chance lt 60&gt;&gt;&lt;&lt;set _foundRock to true&gt;&gt;and see a heavy rock nearby.  It will probably destroy some of whatever is in the box, but it&#39;s better than nothing.&lt;&lt;else&gt;&gt;but you can&#39;t see anything useful.&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;if def _foundShovel&gt;&gt;\
+    &lt;&lt;biglink &#39;Try the shovel.&#39; &#39;found-chest-shovel&#39;&gt;&gt;
+&lt;&lt;/if&gt;&gt;\
+&lt;&lt;if def _foundRock&gt;&gt;\
+    &lt;&lt;biglink &#39;Try the rock.&#39; &#39;found-chest-rock&#39;&gt;&gt;
+&lt;&lt;/if&gt;&gt;\
+&lt;&lt;biglink &#39;Leave the box be.&#39; &#39;found-chest-leave&#39;&gt;&gt;
+
+:: found-chest-shovel [common]
+&lt;&lt;if $chance lt 10&gt;&gt;Unfortunately, the box is stronger than you imagined, and the shovel snaps in half as you try to pry the lid of the box off.
+
+You toss the shovel aside. You&#39;ve already wasted too much time here.
+
+&lt;&lt;nextscene&gt;&gt;\
+&lt;&lt;else&gt;&gt;The lid pops open, and you collect the contents of the box.&lt;&lt;loot&gt;&gt;&lt;&lt;loot $location&gt;&gt;
+
+&lt;&lt;nextscene&gt;&gt;\
+&lt;&lt;/if&gt;&gt;
+
+:: found-chest-rock [common]
+You heave the rock onto the box, &lt;&lt;if $chance lt 50&gt;&gt;and it bounces unceremoniously off of it, sending bubbles swarming around, and coming to rest nearby.
+
+You decide you&#39;ve wasted enough time on this box and move on.
+
+&lt;&lt;nextscene&gt;&gt;&lt;&lt;else&gt;&gt;and it rolls off the dented lid and comes to rest on the bones beneath it. You manage to pry the lid the rest of the way off. Most of what was inside was damaged, but a few odds and ends survived.&lt;&lt;loot $location&gt;&gt;
+
+&lt;&lt;nextscene&gt;&gt;&lt;&lt;/if&gt;&gt;
 </pre></div>
 
-<p>You keep all rights to your work, including reusing it or publishing it elsewhere, you just give me the right to also use it. You don&rsquo;t need to use legalese or anything crazy, just a clear note I can point to in case you use some of this work or these ideas elsewhere and some other publisher or organization comes after me.</p>
-<p>Please also let me know how you&rsquo;d like to be credited (your name or handle, a website or other link you want me to promote, etc).</p></article></body></html>
+<p><a href="../readme.html">Back to the main readme.</a></p></article></body></html>

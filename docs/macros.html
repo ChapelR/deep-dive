@@ -1055,25 +1055,26 @@ body .markdown-body
 .codehilite .vi{color:teal}
 .codehilite .il{color:#009999}
 .codehilite .gc{color:#999;background-color:#EAF2F5}
-</style><title>readme</title></head><body><article class="markdown-body"><h1 id="deep-dive-event-scaffolding">Deep Dive Event Scaffolding<a class="headerlink" href="#deep-dive-event-scaffolding" title="Permanent link"></a></h1>
-<h2 id="ground-floor-intro">Ground Floor Intro<a class="headerlink" href="#ground-floor-intro" title="Permanent link"></a></h2>
-<p>Atlantis has sunken into the ocean. The survivors have gathered in the cities highest points, where they are attempting to rebuild. The player is a diver, diving into the ruins of Atlantis to find materials and treasures. These dives are made up of random events.</p>
-<h2 id="detailed-information">Detailed Information<a class="headerlink" href="#detailed-information" title="Permanent link"></a></h2>
-<ul>
-<li><a href="docs/events.html">Event Writing Guide</a></li>
-<li><a href="docs/lore.html">Lore Overview</a></li>
-<li><a href="docs/mechanics.html">Mechanics Overview</a></li>
-<li><a href="docs/macros.html">Macros</a></li>
-</ul>
-<h2 id="using-the-scaffold">Using the Scaffold<a class="headerlink" href="#using-the-scaffold" title="Permanent link"></a></h2>
-<p>Download the <a href="scaffold.zip">scaffold</a> and extract it. There are two project files: <code>archive.tw2.html</code> and <code>scaffold.html</code>. The former can be imported into Twine 2 or Tweego, the latter can be imported into or decompiled with most other compilers that can use SugarCube v2.x. You can use this simple project to create and test events.</p>
-<p>You&rsquo;ll want to read the <a href="docs/events.html">event writing guide</a> for a primer on how to do that. If anything confuses you, the <a href="docs/mechanics.html">mechanics</a> and <a href="docs/macros.html">macro</a> overviews will likely help clarify any finer points, but feel free to ask me too.</p>
-<p>I would ask that you please read the <a href="docs/lore.html">lore</a> overview.</p>
-<h2 id="sending-me-events">Sending Me Events<a class="headerlink" href="#sending-me-events" title="Permanent link"></a></h2>
-<p>Please send me the events as compiled html using the scaffold; just compile / publish your scaffold project to html and send it. Please send only one event per file (though you can send a bunch per email / message), by uploading it to a shared Google drive folder I will share with you. If you don&rsquo;t want to or can&rsquo;t use Google Drive, you can instead email me the files at <code>Mason_(359*2)@hotmail.com</code> (note, do the math there to get the number, and lose the parens).</p>
-<p>I will not necessarily except all events. Please send me an email that gives me, Chapel, the right to publish, modify, and distribute your work.  For example:</p>
-<div class="codehilite"><pre>I give Chapel the right to publish, modify, and distribute the content in the attached files without limitation, as long as proper attribution is given.
+</style><title>macros</title></head><body><article class="markdown-body"><h1 id="macros">Macros<a class="headerlink" href="#macros" title="Permanent link"></a></h1>
+<p><a href="../readme.html">Back to the main readme.</a></p>
+<p>This covers the macros in the scaffold. Most are cheap knock-offs of what they do in the real game.</p>
+<h2 id="nextscene"><code>&lt;&lt;nextscene&gt;&gt;</code><a class="headerlink" href="#nextscene" title="Permanent link"></a></h2>
+<p>Sends the player to the next scene in the playlist or back to the surface when they&rsquo;re out of scenes.  All events end this way. It is an exit point for events. You will probably have a few of these, since you should let players leave most events of their own volition. You should definitely have at least one.</p>
+<h2 id="biglink"><code>&lt;&lt;biglink&gt;&gt;</code><a class="headerlink" href="#biglink" title="Permanent link"></a></h2>
+<p>This is a custom-styled link used in the game. In the scaffold it&rsquo;s a normal link, but please use it wherever possible. Syntax is <code>&lt;&lt;biglink 'text' 'passage'&gt;&gt;</code>.</p>
+<h2 id="surface"><code>&lt;&lt;surface&gt;&gt;</code><a class="headerlink" href="#surface" title="Permanent link"></a></h2>
+<p>Sends the player back to the surface and ends the dive. Please use this incredibly sparingly; only in moments where not causing the player to lose something would cheapen the experience.</p>
+<h2 id="loot"><code>&lt;&lt;loot&gt;&gt;</code><a class="headerlink" href="#loot" title="Permanent link"></a></h2>
+<p>Used to reward the player with loot. <code>&lt;&lt;loot&gt;&gt;</code> gives completely random loot. <code>&lt;&lt;loot n&gt;&gt;</code>, where <code>n</code> is a number between 0 and 3 gives loot at differing odds; 0 has the lowest chance of good loot, while 1, 2, and 3 have increasing odds of better loot. <code>&lt;&lt;loot $location&gt;&gt;</code> gives loot based on how deep the player is right now, so generates a nice curve through the game. Most loot should be location based or totally random, unless you&rsquo;re rewarding the player for having an item or making a smart choice; in these cases, a nice <code>&lt;&lt;loot 2&gt;&gt;</code> or <code>&lt;&lt;loot 3&gt;&gt;</code> is fine.</p>
+<h2 id="chance"><code>$chance</code><a class="headerlink" href="#chance" title="Permanent link"></a></h2>
+<p>Not a macro but still important. Use this value to have something random happen. For example:
+<div class="codehilite"><pre>&lt;&lt;if $chance lt 35&gt;&gt;
+    This has a 35% chance of occurring.
+&lt;&lt;/if&gt;&gt;
 </pre></div>
-
-<p>You keep all rights to your work, including reusing it or publishing it elsewhere, you just give me the right to also use it. You don&rsquo;t need to use legalese or anything crazy, just a clear note I can point to in case you use some of this work or these ideas elsewhere and some other publisher or organization comes after me.</p>
-<p>Please also let me know how you&rsquo;d like to be credited (your name or handle, a website or other link you want me to promote, etc).</p></article></body></html>
+It is always a random number between 1 and 100.</p>
+<h2 id="the-passage-tag-unique">The passage tag <code>unique</code><a class="headerlink" href="#the-passage-tag-unique" title="Permanent link"></a></h2>
+<p>Causes an event to be deleted after it is played, so that it only ever happens once. Only needs to be included in the first passage of an event.</p>
+<h2 id="the-passage-tag-no-return">The passage tag <code>no-return</code><a class="headerlink" href="#the-passage-tag-no-return" title="Permanent link"></a></h2>
+<p>By default, the player can cut short their dive and return to the surface whenever they want. Use this to prevent that, such as in the middle of a scuffle, or when it&rsquo;d otherwise make no sense.</p>
+<p><a href="../readme.html">Back to the main readme.</a></p></article></body></html>
