@@ -2,20 +2,13 @@
 
 Atlantis has sunken into the ocean. The survivors have gathered in the city's highest points, where they are attempting to rebuild. The player is a diver, diving into the ruins of Atlantis to find materials and treasures. These dives are made up of random events.
 
-## Detailed Information
-
-- [Event Writing Guide](./docs/events.html)
-- [Lore Overview](./docs/lore.html)
-- [Mechanics Overview](./docs/mechanics.html)
-- [Macros](./docs/macros.html)
-
 ## Using the Scaffold
 
-Download the [scaffold](./scaffold.zip) and extract it. There are two project files: `archive.tw2.html` and `scaffold.html`. The former can be imported into Twine 2 or Tweego, the latter can be imported into or decompiled with most other compilers that can use SugarCube v2.x. You can use this simple project to create and test events.
+Download the [scaffold](https://twinelab.net/deep-dive/scaffold/scaffold.zip) and extract it. There are two project files: `archive.tw2.html` and `scaffold.html`. The former can be imported into Twine 2 or Tweego, the latter can be imported into or decompiled with most other compilers that can use SugarCube v2.x. You can use this simple project to create and test events.
 
-You'll want to read the [event writing guide](./docs/events.html) for a primer on how to do that. If anything confuses you, the [mechanics](./docs/mechanics.html) and [macro](./docs/macros.html) overviews will likely help clarify any finer points, but feel free to ask me too.
+You'll want to read the [event writing guide](#events) for a primer on how to do that. If anything confuses you, the [mechanics](#mechanics) and [macro](#macros) overviews will likely help clarify any finer points, but feel free to ask me too.
 
-I would ask that you please read the [lore](./docs/lore.html) overview.
+I would ask that you please read the [lore](#lore-overview) overview.
 
 ## Sending Me Events
 
@@ -32,8 +25,6 @@ You keep all rights to your work, including reusing it or publishing it elsewher
 Please also let me know how you'd like to be credited (your name or handle, a website or other link you want me to promote, etc).
 
 # Events
-
-[Back to the main readme.](../readme.html)
 
 ## Creating Events
 
@@ -128,11 +119,7 @@ You decide you've wasted enough time on this box and move on.
 <<nextscene>><</if>>
 ```
 
-[Back to the main readme.](../readme.html)
-
 # Lore Overview
-
-[Back to the main readme.](../readme.html)
 
 ## General Info
 
@@ -248,11 +235,7 @@ An intelligent, telepathic tree that looks somewhat like a flower and hates huma
 
 A writhing mass of chains whose purpose and desires are unfathomable.
 
-[Back to the main readme.](../readme.html)
-
 # Macros
-
-[Back to the main readme.](../readme.html)
 
 This covers the macros in the scaffold. Most are cheap knock-offs of what they do in the real game.
 
@@ -290,11 +273,7 @@ Causes an event to be deleted after it is played, so that it only ever happens o
 
 By default, the player can cut short their dive and return to the surface whenever they want. Use this to prevent that, such as in the middle of a scuffle, or when it'd otherwise make no sense.
 
-[Back to the main readme.](../readme.html)
-
 # Mechanics
-
-[Back to the main readme.](../readme.html)
 
 Just a few notes on *Deep Dive*'s mechanics to help you understand how your events fit in. I'll release a limited demo shortly for a better look.
 
@@ -303,5 +282,3 @@ Just a few notes on *Deep Dive*'s mechanics to help you understand how your even
 You're a diver, and you dive, haggle and sell your loot, buy upgrades (and make donations), and dive again. As the player dives, they'll find ways to get even deeper, getting better loot and moving the overarching plot along. These events will be occurring on the player's dives.
 
 The game looks through all the events it has access to, makes sure the player can play them (i.e. at the right depth) and then randomly assigns a number of these to a playlist of a certain length (based on upgrades that help the player stay down longer). The player plays through these events to get their loot, and as such, they are the bulk of the game; a large number of interesting events is needed to keep things interesting.
-
-[Back to the main readme.](../readme.html)
